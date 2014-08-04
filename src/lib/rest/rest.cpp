@@ -734,13 +734,16 @@ static int connectionTreat
 
 
   // 3. Finally, serve the request (unless an error has occurred)
+#if 0
   if (((ciP->verb == POST) || (ciP->verb == PUT)) && (ciP->httpHeaders.contentLength == 0) && (strncasecmp(ciP->url.c_str(), "/log/", 5) != 0))
   {
     std::string errorMsg = restErrorReplyGet(ciP, ciP->outFormat, "", url, SccLengthRequired, "Zero/No Content-Length in PUT/POST request");
     ciP->httpStatusCode = SccLengthRequired;
     restReply(ciP, errorMsg);
   }
-  else if (ciP->answer != "")
+  else
+#endif
+  if (ciP->answer != "")
     restReply(ciP, ciP->answer);
   else
     serveFunction(ciP);

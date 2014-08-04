@@ -35,6 +35,7 @@
 #include "ngsi/ParseData.h"
 #include "rest/ConnectionInfo.h"
 #include "rest/clientSocketHttp.h"
+#include "rest/restReply.h"
 #include "xmlParse/xmlRequest.h"
 
 
@@ -136,6 +137,40 @@ static void registerContextForward(ConnectionInfo* ciP, ParseData* parseDataP, R
 std::string postRegisterContext(ConnectionInfo* ciP, int components, std::vector<std::string>& compV, ParseData* parseDataP)
 {
   RegisterContextResponse  rcr;
+
+  if (ciP->httpHeaders.contentLength == 0)
+  {
+    ContextRegistration* crP = new ContextRegistration();
+
+    if (ciP->uriParam["enId"] != "")
+    {
+      EntityId*  enP = new EntityId(ciP->uriParam["enId"], ciP->uriParam["enType"], "false");
+
+      crP->entityIdVector.push_back(enP);
+      parseDataP->rcr.res.contextRegistrationVector.push_back(crP);
+    }
+
+    if (ciP->uriParam["attrName"] != "")
+    {
+      ContextRegistrationAttribute* aP = new ContextRegistrationAttribute(ciP->uriParam["attrName"], ciP->uriParam["attrType"], "false");
+
+      crP->contextRegistrationAttributeVector.push_back(aP);
+    }
+
+    crP->providingApplication.set(ciP->uriParam["provApp"]);
+
+    parseDataP->rcr.res.duration.set(ciP->uriParam["duration"]);
+    parseDataP->rcr.res.registrationId.set(ciP->uriParam["regId"]);
+    
+    std::string res;
+    if ((res = parseDataP->rcr.res.check(RegisterContext, ciP->outFormat, "", "", 0)) != "OK")
+    {
+      std::string errorMsg = restErrorReplyGet(ciP, ciP->outFormat, "", "/ngsi9/registerContext", SccBadRequest, res);
+      LM_W(("Bad Input (%s)", res.c_str()));
+      restReply(ciP, errorMsg);
+      return "OK";
+    }
+  }
 
   if (fwdPort != 0)
   {
