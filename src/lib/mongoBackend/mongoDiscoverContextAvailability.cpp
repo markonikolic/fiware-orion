@@ -183,7 +183,7 @@ static HttpStatusCode associationsDiscoverContextAvailability
   int                                   limit,
   bool                                  details
 )
-{
+{      
     if (scope == SCOPE_VALUE_ASSOC_ALL)
     {
         LM_W(("Bad Input (%s scope not supported)", SCOPE_VALUE_ASSOC_ALL));
@@ -191,8 +191,16 @@ static HttpStatusCode associationsDiscoverContextAvailability
         return SccOk;
     }
 
-    MetadataVector mdV;
+    /* Include regular CRs (as if association weren't used) */
+    LM_T(LmtPagination, ("Offset: %d, Limit: %d, Details: %s", offset, limit, (details == true)? "true" : "false"));
     std::string err;
+    if (!registrationsQuery(requestP->entityIdVector, requestP->attributeList, &responseP->responseVector, &err, tenant))
+    {
+      responseP->errorCode.fill(SccReceiverInternalError, err);
+      return SccOk;
+    }
+
+    MetadataVector mdV;    
     if (!associationsQuery(&requestP->entityIdVector, &requestP->attributeList, scope, &mdV, &err, tenant, offset, limit, details))
     {
         responseP->errorCode.fill(SccReceiverInternalError, std::string("Database error: ") + err);
@@ -240,6 +248,17 @@ static HttpStatusCode associationsDiscoverContextAvailability
         }
     }
 
+    if (mdV.size() > 0)
+    {
+      /* Set association metadata as final ContextRegistrationResponse (only if makes sense, in the case of
+       * finding any association */
+      ContextRegistrationResponse* crrMd = new ContextRegistrationResponse();
+      crrMd->contextRegistration.providingApplication.set("http://www.fi-ware.eu/NGSI/association");
+      crrMd->contextRegistration.registrationMetadataVector = mdV;
+      responseP->responseVector.push_back(crrMd);
+    }
+
+#if 0
     if (responseP->responseVector.size() == 0)
     {
       responseP->errorCode.fill(SccContextElementNotFound, "Could not query association with combination of entity/attribute");
@@ -251,6 +270,7 @@ static HttpStatusCode associationsDiscoverContextAvailability
     crrMd->contextRegistration.providingApplication.set("http://www.fi-ware.eu/NGSI/association");
     crrMd->contextRegistration.registrationMetadataVector = mdV;
     responseP->responseVector.push_back(crrMd);
+#endif
 
     return SccOk;
 }
