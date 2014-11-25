@@ -111,15 +111,6 @@ std::string StatusCode::render(Format format, const std::string& indent, bool co
 
   if (details != "")
   {
-    //
-    // Temporary exit just to hunt '/' in details
-    // To be removed once these changes are done
-    //
-    if (strstr(details.c_str(), "/") != NULL)
-    {
-      out += valueTag(indent + "  ", "error", "found a slash in details", format, false);
-    }
-    
     out += valueTag(indent + "  ", "details", details, format, false);
   }
 
