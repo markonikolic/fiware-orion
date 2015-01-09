@@ -150,6 +150,10 @@ std::string postUpdateContext
     std::string     verb         = "POST";
     std::string     resource     = prefix + "/updateContext";
     std::string     tenant       = ciP->tenant;
+    std::string     mimeType;
+
+    mimeType = (ciP->inFormat == XML)? "application/xml" : "application/json";
+    LM_M(("KZ: Sending 'UpdateContextForward' in format '%s'", mimeType.c_str()));
 
     out = sendHttpSocket(ip, 
                          port,
@@ -159,10 +163,12 @@ std::string postUpdateContext
                          ciP->httpHeaders.servicePath,
                          ciP->httpHeaders.xauthToken,
                          resource,
-                         "application/xml",
+                         mimeType,
                          payloadIn,
                          false,
                          true);
+
+    LM_M(("KZ: response for forwarded updateContext: %s", out.c_str()));
 
     // Should be safe to free up ucrP now ...
     ucrP->release();
@@ -185,6 +191,8 @@ std::string postUpdateContext
     std::string             errorMsg;
     char*                   cleanPayload;
     UpdateContextResponse*  provUpcrsP;
+
+    LM_M(("KZ(Response from CP): '%s'", out.c_str()));
 
     cleanPayload = xmlPayloadClean(out.c_str(), "<updateContextResponse>");
 

@@ -139,6 +139,13 @@ std::string postQueryContext
   std::string     verb         = "POST";
   std::string     resource     = prefix + "/queryContext";
   std::string     tenant       = ciP->tenant;
+  std::string     mimeType;
+
+  mimeType = (ciP->outFormat == XML)? "application/xml" : "application/json"; 
+  LM_M(("KZ: Sending 'QueryContextForward' in format '%s'", mimeType.c_str()));
+
+  // FIXME P5: Here I set desired foramt to the same as the original message was sent in
+  ciP->outFormat = ciP->inFormat;
 
   out = sendHttpSocket(ip,
                        port,
@@ -148,11 +155,13 @@ std::string postQueryContext
                        ciP->httpHeaders.servicePath,
                        ciP->httpHeaders.xauthToken,
                        resource,
-                       "application/xml",
+                       mimeType,
                        payload,
                        false,
                        true);
 
+
+  LM_M(("KZ: response for forwarded queryContext: %s", out.c_str()));
 
   if ((out == "error") || (out == ""))
   {
@@ -172,7 +181,10 @@ std::string postQueryContext
   std::string  s;
   std::string  errorMsg;
 
-  cleanPayload = xmlPayloadClean(out.c_str(), "<queryContextResponse>");
+  if (ciP->outFormat == XML)
+    cleanPayload = xmlPayloadClean(out.c_str(), "<queryContextResponse>");
+  else
+    cleanPayload = out;
 
   if ((cleanPayload == NULL) || (cleanPayload[0] == 0))
   {
@@ -187,7 +199,15 @@ std::string postQueryContext
     return answer;
   }
 
-  s = xmlTreat(cleanPayload, ciP, &parseData, RtQueryContextResponse, "queryContextResponse", NULL, &errorMsg);
+  if (ciP->outFormat == XML)
+  {
+    s = xmlTreat(cleanPayload, ciP, &parseData, RtQueryContextResponse, "queryContextResponse", NULL, &errorMsg);
+  }
+  else
+  {
+    s = jsonTreat(cleanPayload, ciP, &parseData, RtQueryContextResponse, "queryContextResponse", NULL, &errorMsg);
+  }
+
   if (s != "OK")
   {
     QueryContextResponse qcrs;
