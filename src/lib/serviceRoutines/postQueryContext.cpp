@@ -142,7 +142,7 @@ std::string postQueryContext
   std::string     tenant       = ciP->tenant;
   std::string     mimeType;
 
-  mimeType = (ciP->outFormat == XML)? "application/xml" : "application/json"; 
+  mimeType = (ciP->inFormat == XML)? "application/xml" : "application/json"; 
   LM_F(("Forwarding QueryContext in '%s'", mimeType.c_str()));
 
   out = sendHttpSocket(ip,
