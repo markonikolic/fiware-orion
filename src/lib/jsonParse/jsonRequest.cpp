@@ -165,7 +165,8 @@ std::string jsonTreat
   ParseData*          parseDataP,
   RequestType         request,
   const std::string&  payloadWord,
-  JsonRequest**       reqPP
+  JsonRequest**       reqPP,
+  std::string*        errorMsg
 )
 {
   std::string   res   = "OK";
@@ -190,6 +191,11 @@ std::string jsonTreat
                         SccBadRequest,
                         std::string("Sorry, no request treating object found for RequestType /") +
                         requestType(request) + "/");
+
+    if (errorMsg)
+    {
+      *errorMsg = std::string("no request treating object found for RequestType ") + requestType(request);
+    }
 
     LM_W(("Bad Input (no request treating object found for RequestType %d (%s))", request, requestType(request)));
     return errorReply;
@@ -218,6 +224,12 @@ std::string jsonTreat
                                                 std::string("JSON Parse Error"));
 
     LM_W(("Bad Input (JSON Parse Error: %s)", e.what()));
+
+    if (errorMsg)
+    {
+      *errorMsg = std::string("JSON parse error exception: ") + e.what();
+    }
+
     return errorReply;
   }
   catch (...)
@@ -229,6 +241,11 @@ std::string jsonTreat
                                                 SccBadRequest,
                                                 std::string("JSON Generic Error"));
 
+    if (errorMsg)
+    {
+      *errorMsg = std::string("JSON parse error generic exception");
+    }
+
     LM_W(("Bad Input (JSON parse generic error)"));
     return errorReply;
   }
@@ -239,6 +256,12 @@ std::string jsonTreat
     ciP->httpStatusCode = SccBadRequest;
 
     std::string answer = restErrorReplyGet(ciP, ciP->outFormat, "", payloadWord, ciP->httpStatusCode, res);
+
+    if (errorMsg)
+    {
+      *errorMsg = "JSON parse error:" + res;;
+    }
+
     return answer;
   }
 
@@ -258,6 +281,11 @@ std::string jsonTreat
   if (res != "OK")
   {
     LM_W(("Bad Input (%s: %s)", reqP->keyword.c_str(), res.c_str()));
+
+    if (errorMsg)
+    {
+      *errorMsg = "Bad Input: " + reqP->keyword + ": " + res;;
+    }
   }
 
   reqP->present(parseDataP);

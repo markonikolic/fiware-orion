@@ -63,7 +63,8 @@ extern std::string jsonTreat
   ParseData*          parseDataP,
   RequestType         request,
   const std::string&  payloadWord,
-  JsonRequest**       reqPP
+  JsonRequest**       reqPP,
+  std::string*        errorMsg = NULL
 );
 
 #endif  // SRC_LIB_JSONPARSE_JSONREQUEST_H_

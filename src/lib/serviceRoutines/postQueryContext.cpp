@@ -33,6 +33,7 @@
 #include "rest/clientSocketHttp.h"
 #include "serviceRoutines/postQueryContext.h"
 #include "xmlParse/xmlRequest.h"
+#include "jsonParse/jsonRequest.h"
 
 
 
@@ -184,7 +185,7 @@ std::string postQueryContext
   if (ciP->outFormat == XML)
     cleanPayload = xmlPayloadClean(out.c_str(), "<queryContextResponse>");
   else
-    cleanPayload = out;
+    cleanPayload = (char*) out.c_str();
 
   if ((cleanPayload == NULL) || (cleanPayload[0] == 0))
   {
