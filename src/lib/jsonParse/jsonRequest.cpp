@@ -216,7 +216,7 @@ std::string jsonTreat
   LM_T(LmtParse, ("Treating '%s' request", reqP->keyword.c_str()));
 
   reqP->init(parseDataP);
-  LM_M(("KZ: '%s'", content));
+
   try
   {
     res = jsonParse(ciP, content, reqP->keyword, reqP->parseVector, parseDataP);

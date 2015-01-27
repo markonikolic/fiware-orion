@@ -48,7 +48,7 @@ typedef struct ContextElement
   ContextAttributeVector  contextAttributeVector;  // Optional
   MetadataVector          domainMetadataVector;    // Optional
 
-  std::string  render(ConnectionInfo* ciP, RequestType requestType, const std::string& indent, bool comma);
+  std::string  render(ConnectionInfo* ciP, RequestType requestType, const std::string& indent, bool comma, bool showTag);
   void         present(const std::string& indent, int ix);
   void         release(void);
   void         fill(const struct ContextElement& ce);

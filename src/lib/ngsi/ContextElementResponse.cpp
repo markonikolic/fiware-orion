@@ -50,7 +50,7 @@ std::string ContextElementResponse::render
   std::string out      = "";
 
   out += startTag(indent, xmlTag, jsonTag, ciP->outFormat, false, false);
-  out += contextElement.render(ciP, requestType, indent + "  ", true);
+  out += contextElement.render(ciP, requestType, indent + "  ", true, true);
   out += statusCode.render(ciP->outFormat, indent + "  ", false);
   out += endTag(indent, xmlTag, ciP->outFormat, comma, false);
 

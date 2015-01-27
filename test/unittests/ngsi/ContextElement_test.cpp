@@ -79,12 +79,12 @@ TEST(ContextElement, Check)
   std::string     out;
   ConnectionInfo  ci(XML);
 
-  out = ce2.render(&ci, UpdateContextElement, "", false);
+  out = ce2.render(&ci, UpdateContextElement, "", false, false);
   EXPECT_EQ("OK", testDataFromFile(expectedBuf, sizeof(expectedBuf), outfile1)) << "Error getting test data from '" << outfile1 << "'";
   EXPECT_STREQ(expectedBuf, out.c_str());
 
   ci.outFormat = JSON;
-  out = ce2.render(&ci, UpdateContextElement, "", false);
+  out = ce2.render(&ci, UpdateContextElement, "", false, true);
   EXPECT_EQ("OK", testDataFromFile(expectedBuf, sizeof(expectedBuf), outfile2)) << "Error getting test data from '" << outfile2 << "'";
   EXPECT_STREQ(expectedBuf, out.c_str());
 

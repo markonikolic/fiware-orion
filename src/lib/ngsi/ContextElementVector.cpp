@@ -71,7 +71,7 @@ std::string ContextElementVector::render
 
   for (unsigned int ix = 0; ix < vec.size(); ++ix)
   {
-    out += vec[ix]->render(ciP, requestType, indent + "  ", ix != vec.size() - 1); 
+    out += vec[ix]->render(ciP, requestType, indent + "  ", ix != vec.size() - 1, false); 
   }
 
   out += endTag(indent, xmlTag, ciP->outFormat, comma, true);

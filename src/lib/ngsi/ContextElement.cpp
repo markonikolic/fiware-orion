@@ -38,7 +38,7 @@
 *
 * ContextElement::render - 
 */
-std::string ContextElement::render(ConnectionInfo* ciP, RequestType requestType, const std::string& indent, bool comma)
+std::string ContextElement::render(ConnectionInfo* ciP, RequestType requestType, const std::string& indent, bool comma, bool showTag)
 {
   std::string  out                              = "";
   std::string  xmlTag                           = "contextElement";
@@ -52,7 +52,7 @@ std::string ContextElement::render(ConnectionInfo* ciP, RequestType requestType,
   bool         commaAfterAttributeDomainName    = domainMetadataVectorRendered  || contextAttributeVectorRendered;
   bool         commaAfterEntityId               = commaAfterAttributeDomainName || attributeDomainNameRendered;
 
-  out += startTag(indent, xmlTag, jsonTag, ciP->outFormat, false, false);
+  out += startTag(indent, xmlTag, jsonTag, ciP->outFormat, false, showTag);
 
   out += entityId.render(ciP->outFormat, indent + "  ", commaAfterEntityId, false);
   out += attributeDomainName.render(ciP->outFormat, indent + "  ", commaAfterAttributeDomainName);

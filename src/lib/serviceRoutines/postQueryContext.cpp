@@ -143,10 +143,7 @@ std::string postQueryContext
   std::string     mimeType;
 
   mimeType = (ciP->outFormat == XML)? "application/xml" : "application/json"; 
-  LM_M(("KZ: Sending 'QueryContextForward' in format '%s'", mimeType.c_str()));
-
-  // FIXME P5: Here I set desired foramt to the same as the original message was sent in
-  ciP->outFormat = ciP->inFormat;
+  LM_F(("Forwarding QueryContext in '%s'", mimeType.c_str()));
 
   out = sendHttpSocket(ip,
                        port,
@@ -161,8 +158,6 @@ std::string postQueryContext
                        false,
                        true);
 
-
-  LM_M(("KZ: response for forwarded queryContext: %s", out.c_str()));
 
   if ((out == "error") || (out == ""))
   {

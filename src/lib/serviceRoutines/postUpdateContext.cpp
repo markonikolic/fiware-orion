@@ -153,7 +153,10 @@ std::string postUpdateContext
     std::string     mimeType;
 
     mimeType = (ciP->inFormat == XML)? "application/xml" : "application/json";
-    LM_M(("KZ: Sending 'UpdateContextForward' in format '%s'", mimeType.c_str()));
+
+    // This LM_F is used in the functional test harness - cannot be removed without also
+    // modifying 703_mime_type_in_forwarding_request/update_mime_type.test
+    LM_F(("Forwarding UpdateContext in '%s'", mimeType.c_str()));
 
     out = sendHttpSocket(ip, 
                          port,
@@ -167,8 +170,6 @@ std::string postUpdateContext
                          payloadIn,
                          false,
                          true);
-
-    LM_M(("KZ: response for forwarded updateContext: %s", out.c_str()));
 
     // Should be safe to free up ucrP now ...
     ucrP->release();
@@ -191,8 +192,6 @@ std::string postUpdateContext
     std::string             errorMsg;
     char*                   cleanPayload;
     UpdateContextResponse*  provUpcrsP;
-
-    LM_M(("KZ(Response from CP): '%s'", out.c_str()));
 
     cleanPayload = xmlPayloadClean(out.c_str(), "<updateContextResponse>");
 
@@ -238,5 +237,6 @@ std::string postUpdateContext
   }
 
   answer = upcr.render(ciP, UpdateContext, "");
+
   return answer;
 }
