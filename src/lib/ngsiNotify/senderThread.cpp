@@ -57,7 +57,8 @@ void* startSenderThread(void* p)
                    params->content_type,
                    params->content,
                    true,
-                   NOTIFICATION_WAIT_MODE);
+                   NOTIFICATION_WAIT_MODE,
+                   "Notification");
 
     /* Delete the parameters after using them */
     delete params;

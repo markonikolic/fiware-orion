@@ -136,7 +136,8 @@ std::string sendHttpSocket
    const std::string&     content_type,
    const std::string&     content,
    bool                   useRush,
-   bool                   waitForResponse
+   bool                   waitForResponse,
+   const std::string&     what
 )
 {
   char                       portAsString[16];
@@ -355,13 +356,13 @@ std::string sendHttpSocket
 
   if (res != CURLE_OK)
   {
-    LM_W(("Notification failure for %s:%s (curl_easy_perform failed: %s)", ip.c_str(), portAsString, curl_easy_strerror(res)));
+    LM_W(("%s failure for %s:%s (curl_easy_perform failed: %s)", what.c_str(), ip.c_str(), portAsString, curl_easy_strerror(res)));
     result = "";
   }
   else
   {
     // The Response is here
-    LM_I(("Notification Successfully Sent to %s", url.c_str()));
+    LM_I(("%s successfully Sent to %s", what.c_str(), url.c_str()));
     result.assign(httpResponse->memory, httpResponse->size);
   }
 
@@ -415,14 +416,14 @@ int socketHttpConnect(const std::string& host, unsigned short port)
 
   if (getaddrinfo(host.c_str(), port_str, &hints, &peer) != 0)
   {
-    LM_W(("Notification failure for %s:%d (getaddrinfo: %s)", host.c_str(), port, strerror(errno)));
+    LM_W(("%s failure for %s:%d (getaddrinfo: %s)", what.c_str(), host.c_str(), port, strerror(errno)));
     LM_TRANSACTION_END();
     return -1;
   }
 
   if ((fd = socket(peer->ai_family, peer->ai_socktype, peer->ai_protocol)) == -1)
   {
-    LM_W(("Notification failure for %s:%d (socket: %s)", host.c_str(), port, strerror(errno)));
+    LM_W(("%s failure for %s:%d (socket: %s)", what.c_str(), host.c_str(), port, strerror(errno)));
     LM_TRANSACTION_END();
     return -1;
   }
@@ -431,7 +432,7 @@ int socketHttpConnect(const std::string& host, unsigned short port)
   {
     freeaddrinfo(peer);
     close(fd);
-    LM_W(("Notification failure for %s:%d (connect: %s)", host.c_str(), port, strerror(errno)));
+    LM_W(("%s failure for %s:%d (connect: %s)", what.c_str(), host.c_str(), port, strerror(errno)));
     LM_TRANSACTION_END();
     return -1;
   }

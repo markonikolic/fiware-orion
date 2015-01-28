@@ -109,54 +109,73 @@ std::string postQueryContext
   }
 
 
+
   //
-  // 2. The exact same QueryContextRequest will be used for the query-forwarding
+  // 2. Create the ConnectionInfo for the forward message
+  //    The format (JSON or XML) of the incoming message that provoked this forwarding
+  //    is used as in and out format for the forwarded message (ciP->inFormat).
+  //    We need to include the HTTP headers 'tenant', 'servicePath' and 'xauthToken' in the
+  //    forwarded message.
   //
-  QueryContextRequest* qcReqP = &parseDataP->qcr.res;
+  ConnectionInfo ci;
+
+  ci.url                     = prefix + "/queryContext";
+  ci.inFormat                = ciP->inFormat;
+  ci.outFormat               = ciP->inFormat;
+  ci.httpHeaders.servicePath = ciP->httpHeaders.servicePath;
+  ci.httpHeaders.xauthToken  = ciP->httpHeaders.xauthToken;
+  ci.tenant                  = ciP->tenant;
 
 
   //
-  // 3. Render an XML-string of the request we want to forward
+  // 3. The exact same QueryContextRequest will be used for the query-forwarding
+  //    Render a string of the request we want to forward
   //
-  std::string payload = qcReqP->render(QueryContext, XML, "");
-  char*       cleanPayload;
+  QueryContextRequest* qcReqP   = &parseDataP->qcr.res;
+  std::string          payload  = qcReqP->render(QueryContext, ci.outFormat, "");
+  char*                cleanPayload;
 
-  if ((cleanPayload = xmlPayloadClean(payload.c_str(), "<queryContextRequest>")) == NULL)
+  if (ci.outFormat == XML)
   {
-    QueryContextResponse qcrs;
+    if ((cleanPayload = xmlPayloadClean(payload.c_str(), "<queryContextRequest>")) == NULL)
+    {
+      QueryContextResponse qcrs;
 
-    LM_E(("Runtime Error (error rendering forward-request)"));
-    qcrs.errorCode.fill(SccContextElementNotFound, "");
-    answer = qcrs.render(ciP, QueryContext, "");
-    return answer;
+      LM_E(("Runtime Error (error rendering forward-request)"));
+      qcrs.errorCode.fill(SccContextElementNotFound, "");
+      answer = qcrs.render(ciP, QueryContext, "");
+      return answer;
+    }
   }
+  else
+    cleanPayload = (char*) payload.c_str();
 
+  ci.payload     = cleanPayload;
+  ci.payloadSize = strlen(cleanPayload);
 
+  
   //
   // 4. Send the request to the providing application (and await the reply)
   // FIXME P7: Should Rush be used?
   //
   std::string     out;
-  std::string     verb         = "POST";
-  std::string     resource     = prefix + "/queryContext";
-  std::string     tenant       = ciP->tenant;
-  std::string     mimeType;
+  std::string     mimeType     = (ci.inFormat == XML)? "application/xml" : "application/json"; 
 
-  mimeType = (ciP->inFormat == XML)? "application/xml" : "application/json"; 
   LM_F(("Forwarding QueryContext in '%s'", mimeType.c_str()));
 
   out = sendHttpSocket(ip,
                        port,
                        protocol,
-                       verb,
-                       tenant,
-                       ciP->httpHeaders.servicePath,
-                       ciP->httpHeaders.xauthToken,
-                       resource,
+                       "POST",
+                       ci.tenant,
+                       ci.httpHeaders.servicePath,
+                       ci.httpHeaders.xauthToken,
+                       ci.url,
                        mimeType,
-                       payload,
+                       cleanPayload,
                        false,
-                       true);
+                       true,
+                       "Forward QueryContext");
 
 
   if ((out == "error") || (out == ""))
@@ -171,13 +190,13 @@ std::string postQueryContext
 
 
   //
-  // 5. Parse the XML response and fill in a binary QueryContextResponse
+  // 5. Parse the response and fill in a binary QueryContextResponse
   //
   ParseData    parseData;
   std::string  s;
   std::string  errorMsg;
 
-  if (ciP->outFormat == XML)
+  if (ci.outFormat == XML)
     cleanPayload = xmlPayloadClean(out.c_str(), "<queryContextResponse>");
   else
     cleanPayload = (char*) out.c_str();
@@ -197,13 +216,13 @@ std::string postQueryContext
     return answer;
   }
 
-  if (ciP->outFormat == XML)
+  if (ci.outFormat == XML)
   {
-    s = xmlTreat(cleanPayload, ciP, &parseData, RtQueryContextResponse, "queryContextResponse", NULL, &errorMsg);
+    s = xmlTreat(cleanPayload, &ci, &parseData, RtQueryContextResponse, "queryContextResponse", NULL, &errorMsg);
   }
   else
   {
-    s = jsonTreat(cleanPayload, ciP, &parseData, RtQueryContextResponse, "queryContextResponse", NULL, &errorMsg);
+    s = jsonTreat(cleanPayload, &ci, &parseData, RtQueryContextResponse, "queryContextResponse", NULL, &errorMsg);
   }
 
   if (s != "OK")

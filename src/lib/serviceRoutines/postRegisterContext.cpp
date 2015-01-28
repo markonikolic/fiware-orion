@@ -69,7 +69,8 @@ static std::string fordwardRegisterContext
                                         std::string("application/xml"),
                                         payload,
                                         true,
-                                        true);
+                                        true,
+                                        "Forward Registration");
 
   LM_T(LmtCm, ("response to forward registerContext: '%s'", response.c_str()));
 

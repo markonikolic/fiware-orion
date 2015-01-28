@@ -297,7 +297,17 @@ std::string restService(ConnectionInfo* ciP, RestService* serviceV)
   XmlRequest*               reqP       = NULL;
   JsonRequest*              jsonReqP   = NULL;
   ParseData                 parseData;
+  static int                reqNo      = 0;
 
+  ++reqNo;
+
+  LM_M(("KZ: incoming request %d '%s' (in:%s, out:%s): %s", 
+        reqNo, 
+        ciP->url.c_str(), 
+        (ciP->inFormat  == XML)? "XML" : "JSON",
+        (ciP->outFormat == XML)? "XML" : "JSON",
+        ciP->payload));
+  
   if ((ciP->url.length() == 0) || ((ciP->url.length() == 1) && (ciP->url.c_str()[0] == '/')))
   {
     OrionError  error(SccBadRequest, "The Orion Context Broker is a REST service, not a 'web page'");

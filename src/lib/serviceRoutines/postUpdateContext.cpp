@@ -35,6 +35,7 @@
 #include "rest/clientSocketHttp.h"
 #include "serviceRoutines/postUpdateContext.h"
 #include "xmlParse/xmlRequest.h"
+#include "jsonParse/jsonRequest.h"
 
 
 
@@ -153,7 +154,7 @@ std::string postUpdateContext
     std::string     mimeType;
 
     mimeType = (ciP->inFormat == XML)? "application/xml" : "application/json";
-
+    LM_M(("KZ: Forwarding UpdateContext"));
     // This LM_F is used in the functional test harness - cannot be removed without also
     // modifying 703_mime_type_in_forwarding_request/update_mime_type.test
     LM_F(("Forwarding UpdateContext in '%s'", mimeType.c_str()));
@@ -169,7 +170,8 @@ std::string postUpdateContext
                          mimeType,
                          payloadIn,
                          false,
-                         true);
+                         true,
+                         "Forward UpdateContext");
 
     // Should be safe to free up ucrP now ...
     ucrP->release();
@@ -185,7 +187,7 @@ std::string postUpdateContext
 
 
     //
-    // 5. Parse the XML response and fill in a binary ContextElementResponse
+    // 5. Parse the response and fill in a binary ContextElementResponse
     //
     ParseData               parseData;
     std::string             s;
@@ -193,7 +195,12 @@ std::string postUpdateContext
     char*                   cleanPayload;
     UpdateContextResponse*  provUpcrsP;
 
-    cleanPayload = xmlPayloadClean(out.c_str(), "<updateContextResponse>");
+    if (ciP->inFormat == XML)
+      cleanPayload = xmlPayloadClean(out.c_str(), "<updateContextResponse>");
+    else
+      cleanPayload = (char*) out.c_str();
+
+    LM_M(("KZ: Got response of forwarded updateContext: '%s'", cleanPayload));
 
     if ((cleanPayload == NULL) || (cleanPayload[0] == 0))
     {
@@ -210,7 +217,25 @@ std::string postUpdateContext
       return answer;
     }
 
-    s = xmlTreat(cleanPayload, ciP, &parseData, RtUpdateContextResponse, "updateContextResponse", NULL, &errorMsg);
+    //
+    // Setting the 'ciP payload' to what was received from context provider
+    //
+    ciP->payload     = cleanPayload;
+    ciP->payloadSize = strlen(cleanPayload);
+
+
+    //
+    // Parse the payload
+    //
+    if (ciP->inFormat == XML)
+    {
+      s = xmlTreat(cleanPayload, ciP, &parseData, RtUpdateContextResponse, "updateContextResponse", NULL, &errorMsg);
+    }
+    else
+    {
+      s = jsonTreat(cleanPayload, ciP, &parseData, RtUpdateContextResponse, "updateContextResponse", NULL, &errorMsg);
+    }
+
     provUpcrsP = &parseData.upcrs.res;
     if (s != "OK")
     {

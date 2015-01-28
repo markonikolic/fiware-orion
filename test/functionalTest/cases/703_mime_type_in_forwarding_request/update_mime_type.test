@@ -1,0 +1,275 @@
+# Copyright 2015 Telefonica Investigacion y Desarrollo, S.A.U
+#
+# This file is part of Orion Context Broker.
+#
+# Orion Context Broker is free software: you can redistribute it and/or
+# modify it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# Orion Context Broker is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with Orion Context Broker. If not, see http://www.gnu.org/licenses/.
+#
+# For those usages not covered by this license please contact with
+# iot_support at tid dot es
+
+# VALGRIND_READY - to mark the test ready for valgrindTestSuite.sh
+
+--NAME--
+Update Forward With MIME Type As Original Request
+
+--SHELL-INIT--
+dbInit CB
+dbInit CP1
+brokerStart CB 0
+brokerStart CP1 0
+
+--SHELL--
+
+#
+# 01. Update/APPEND E/T in CP1
+# 02. Register Entity E/T in CB with CP1 as reference
+# 03. Update/UPDATE E/T in JSON to make the request being forwarded to CP1
+# 04. Update/UPDATE E/T in XML to make the request being forwarded to CP1
+#
+
+echo "01. Update/APPEND E/T in CP1"
+echo "============================"
+payload='{
+  "contextElements":
+  [
+    {
+      "type": "Light",
+      "id": "TestClient:Light",
+      "isPattern": "false",
+      "attributes":
+      [
+        {
+          "name": "luminescence",
+          "type": "Lumens",
+          "value": "17"
+        }
+      ]
+    }
+  ],
+  "updateAction":"APPEND"
+}'
+orionCurl --url "/v1/updateContext" --port $CP1_PORT --payload "$payload" --json
+echo
+echo
+
+
+echo "02. Register Entity E/T with CP1 as reference"
+echo "============================================="
+payload='{
+  "contextRegistrations":
+  [
+    {
+      "entities":
+      [
+        {
+          "type": "Light",
+          "isPattern":"false",
+          "id":"TestClient:Light"
+        }
+      ],
+      "attributes":
+      [
+        {
+          "name": "luminescence",
+          "type": "Lumens",
+          "isDomain": "false"
+        }
+      ],
+      "providingApplication": "http://localhost:'$CP1_PORT'/ngsi10"
+    }
+  ],
+  "duration":"P1M"
+}'
+orionCurl --url "/v1/registry/registerContext" --payload "$payload" --json
+echo
+echo
+
+
+echo "03. Update/UPDATE E/T in JSON to make the request being forwarded to CP1"
+echo "========================================================================"
+payload='{
+  "contextElements":
+  [
+    {
+      "type": "Light",
+      "id": "TestClient:Light",
+      "isPattern": "false",
+      "attributes":
+      [
+        {
+          "name": "luminescence",
+          "type": "Lumens",
+          "value": "18"
+        }
+      ]
+    }
+  ],
+  "updateAction":"UPDATE"
+}'
+orionCurl --url "/v1/updateContext" --payload "$payload" --json
+echo
+echo
+
+
+echo "04. Update/UPDATE E/T in CB using XML to make the request being forwarded to CP1"
+echo "================================================================================"
+payload='<updateContextRequest>
+  <contextElementList>
+    <contextElement>  
+      <entityId type="Light" isPattern="false">
+        <id>TestClient:Light</id>
+      </entityId>
+      <contextAttributeList>
+        <contextAttribute>
+          <name>luminescence</name>
+          <type>Lumens</type>
+          <contextValue>19</contextValue>
+        </contextAttribute>
+      </contextAttributeList>
+    </contextElement>
+  </contextElementList>
+  <updateAction>UPDATE</updateAction>
+</updateContextRequest>'
+orionCurl --url "/v1/updateContext" --payload "$payload"
+echo
+echo
+
+
+echo "05. grep in log file to see the mime types of the forwarded requests"
+echo "===================================================================="
+grep Forwarding /tmp/contextBroker.log | awk -F Forwarding\  '{ print $2 }'
+echo
+echo
+
+--REGEXPECT--
+01. Update/APPEND E/T in CP1
+============================
+HTTP/1.1 200 OK
+Content-Length: 410
+Content-Type: application/json
+Date: REGEX(.*)
+
+{
+    "contextResponses": [
+        {
+            "contextElement": {
+                "attributes": [
+                    {
+                        "name": "luminescence", 
+                        "type": "Lumens", 
+                        "value": ""
+                    }
+                ], 
+                "id": "TestClient:Light", 
+                "isPattern": "false", 
+                "type": "Light"
+            }, 
+            "statusCode": {
+                "code": "200", 
+                "reasonPhrase": "OK"
+            }
+        }
+    ]
+}
+
+
+02. Register Entity E/T with CP1 as reference
+=============================================
+HTTP/1.1 200 OK
+Content-Length: 74
+Content-Type: application/json
+Date: REGEX(.*)
+
+{
+    "duration": "P1M", 
+    "registrationId": "REGEX([0-9a-f]{24})"
+}
+
+
+03. Update/UPDATE E/T in JSON to make the request being forwarded to CP1
+========================================================================
+HTTP/1.1 200 OK
+Content-Length: 486
+Content-Type: application/json
+Date: REGEX(.*)
+
+{
+    "contextResponses": [
+        {
+            "contextElement": {
+                "attributes": [
+                    {
+                        "name": "luminescence", 
+                        "type": "Lumens", 
+                        "value": ""
+                    }
+                ], 
+                "id": "TestClient:Light", 
+                "isPattern": "false", 
+                "type": "Light"
+            }, 
+            "statusCode": {
+                "code": "200", 
+                "details": "Redirected to context provider localhost:9801/ngsi10", 
+                "reasonPhrase": "OK"
+            }
+        }
+    ]
+}
+
+
+04. Update/UPDATE E/T in CB using XML to make the request being forwarded to CP1
+================================================================================
+HTTP/1.1 200 OK
+Content-Length: 728
+Content-Type: application/xml
+Date: REGEX(.*)
+
+<?xml version="1.0"?>
+<updateContextResponse>
+  <contextResponseList>
+    <contextElementResponse>
+      <contextElement>
+        <entityId type="Light" isPattern="false">
+          <id>TestClient:Light</id>
+        </entityId>
+        <contextAttributeList>
+          <contextAttribute>
+            <name>luminescence</name>
+            <type>Lumens</type>
+            <contextValue/>
+          </contextAttribute>
+        </contextAttributeList>
+      </contextElement>
+      <statusCode>
+        <code>200</code>
+        <reasonPhrase>OK</reasonPhrase>
+        <details>Redirected to context provider localhost:9801/ngsi10</details>
+      </statusCode>
+    </contextElementResponse>
+  </contextResponseList>
+</updateContextResponse>
+
+
+05. grep in log file to see the mime types of the forwarded requests
+====================================================================
+UpdateContext in 'application/json'
+UpdateContext in 'application/xml'
+
+
+--TEARDOWN--
+brokerStop CB
+brokerStop CP1
+dbDrop CB
+dbDrop CP1

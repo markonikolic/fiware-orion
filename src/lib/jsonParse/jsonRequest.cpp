@@ -123,7 +123,11 @@ static JsonRequest jsonRequest[] =
   { AttributeValueInstanceWithTypeAndId,           "POST", "updateContextAttributeRequest",         FUNCS(Upcar) },
 
   { ContextEntitiesByEntityIdAndType,              "POST", "registerProviderRequest",               FUNCS(Rpr)   },
-  { EntityByIdAttributeByNameIdAndType,            "POST", "registerProviderRequest",               FUNCS(Rpr)   }
+  { EntityByIdAttributeByNameIdAndType,            "POST", "registerProviderRequest",               FUNCS(Rpr)   },
+
+  // Responses
+  // { RtUpdateContextResponse,                       "POST", "updateContextResponse",                 FUNCS(Upcrs) },
+
 };
 
 
@@ -134,6 +138,8 @@ static JsonRequest jsonRequest[] =
 */
 static JsonRequest* jsonRequestGet(RequestType request, std::string method)
 {
+  LM_M(("KZ: request: '%s', method: '%s'", requestType(request), method.c_str()));
+
   for (unsigned int ix = 0; ix < sizeof(jsonRequest) / sizeof(jsonRequest[0]); ++ix)
   {
     if ((request == jsonRequest[ix].type) && (jsonRequest[ix].method == method))
@@ -190,6 +196,8 @@ std::string jsonTreat
 
   if (reqP == NULL)
   {
+    LM_M(("Payload to parse:\n%s", ciP->payload));
+
     std::string errorReply =
       restErrorReplyGet(ciP,
                         ciP->outFormat,
