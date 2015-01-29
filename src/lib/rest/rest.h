@@ -30,8 +30,7 @@
 
 #include "rest/RestService.h"
 
-#define  MAX_LEN_IP            64
-#define  DEFAULT_SERVICE_PATH  "/"
+#define  MAX_LEN_IP   64
 
 /* ****************************************************************************
 *
