@@ -1675,7 +1675,6 @@ void processContextElement(ContextElement*                      ceP,
     while (cursor->more()) {
         BSONObj r = cursor->next();
         LM_T(LmtMongo, ("retrieved document: '%s'", r.toString().c_str()));
-        ++docs;
 
         BSONElement idField = r.getField("_id");
 
@@ -1705,6 +1704,7 @@ void processContextElement(ContextElement*                      ceP,
             LM_T(LmtServicePath, ("Removing entity"));
             removeEntity(entityId, entityType, cerP, tenant, entitySPath);
             responseP->contextElementResponseVector.push_back(cerP);
+            ++docs;
             continue;
         }
 
@@ -1718,53 +1718,69 @@ void processContextElement(ContextElement*                      ceP,
          * BSONObj, which is an inmutable type. FIXME P6: try to improve this */
         BSONObj attrs = r.getField(ENT_ATTRS).embeddedObject();
 
-        /* We accumulate the subscriptions in a map. The key of the map is the string representing
-         * subscription id */
+        /* We accumulate the subscriptions in a map. The key of the map is the string representing subscription id */
         std::map<string, TriggeredSubscription*> subsToNotify;
 
         /* Is the entity using location? In that case, we fill the locAttr, coordLat and coordLong attributes with that information, otherwise
          * we fill an empty locAttrs. Any case, processContextAttributeVector uses that information (and eventually modifies) while it
-         * processes the attributes in the updateContext */
-        std::string locAttr = "";
-        double coordLat, coordLong;
-        if (r.hasField(ENT_LOCATION)) {
+         * processes the attributes in the updateContext
+         */
+        std::string  locAttr    = "";
+        double       coordLat;
+        double       coordLong;
+
+        if (r.hasField(ENT_LOCATION))
+        {
             // FIXME P2: potentially, assertion error will happen if the field is not as expected. Although this shouldn't happen
             // (if it happens, it means that somebody has manipulated the DB out-of-band of the context broker), a safer way of parsing BSON object
             // will be needed. This is a general comment, applicable to many places in the mongoBackend code
-            BSONObj loc = r.getObjectField(ENT_LOCATION);
-            locAttr  = loc.getStringField(ENT_LOCATION_ATTRNAME);
-            coordLong  = loc.getField(ENT_LOCATION_COORDS).Array()[0].Double();
-            coordLat = loc.getField(ENT_LOCATION_COORDS).Array()[1].Double();
+            BSONObj loc  = r.getObjectField(ENT_LOCATION);
+            locAttr      = loc.getStringField(ENT_LOCATION_ATTRNAME);
+            coordLong    = loc.getField(ENT_LOCATION_COORDS).Array()[0].Double();
+            coordLat     = loc.getField(ENT_LOCATION_COORDS).Array()[1].Double();
         }
 
-        if (!processContextAttributeVector(ceP, action, subsToNotify, attrs, cerP, locAttr, coordLat, coordLong, tenant, servicePathV)) {
+        if (!processContextAttributeVector(ceP, action, subsToNotify, attrs, cerP, locAttr, coordLat, coordLong, tenant, servicePathV))
+        {
             /* The entity wasn't actually modified, so we don't need to update it and we can continue with next one */
+
+            // KZ: First contextElementResponse created here
             responseP->contextElementResponseVector.push_back(cerP);
             releaseTriggeredSubscriptions(subsToNotify);
             continue;
         }
 
-        /* Now that attrs contains the final status of the attributes after processing the whole
-         * list of attributes in the ContextElement, update entity attributes in database */
+        ++docs;
+
+        /* Now that 'attrs' contains the final status of the attributes after processing the whole list
+         * of attributes in the ContextElement, update entity attributes in database
+         */
         LM_T(LmtServicePath, ("Updating the attributes of the ContextElement"));
         BSONObjBuilder updateSet, updateUnset;
         updateSet.appendArray(ENT_ATTRS, attrs);
         updateSet.append(ENT_MODIFICATION_DATE, getCurrentTime());
-        if (locAttr.length() > 0) {
-            updateSet.append(ENT_LOCATION, BSON(ENT_LOCATION_ATTRNAME << locAttr <<
-                                                           ENT_LOCATION_COORDS << BSON_ARRAY(coordLong << coordLat)));
-        } else {
-            updateUnset.append(ENT_LOCATION, 1);
+        if (locAttr.length() > 0)
+        {
+          updateSet.append(ENT_LOCATION, BSON(ENT_LOCATION_ATTRNAME << locAttr <<
+                                              ENT_LOCATION_COORDS   << BSON_ARRAY(coordLong << coordLat)));
+        }
+        else
+        {
+          updateUnset.append(ENT_LOCATION, 1);
         }
 
         /* We use $set/$unset to avoid doing a global update that will lose the creation date field. Set if always
-           present, unset only if locAttr was erased */
+         * present, unset only if locAttr was erased
+         */
         BSONObj updatedEntity;
-        if (locAttr.length() > 0) {
-            updatedEntity = BSON("$set" << updateSet.obj());
+
+        if (locAttr.length() > 0)
+        {
+          updatedEntity = BSON("$set" << updateSet.obj());
         }
-        else {
-            updatedEntity = BSON("$set" << updateSet.obj() << "$unset" << updateUnset.obj());
+        else
+        {
+          updatedEntity = BSON("$set" << updateSet.obj() << "$unset" << updateUnset.obj());
         }
 
         /* Note that the query that we build for updating is slighty different than the query used
@@ -1861,6 +1877,7 @@ void processContextElement(ContextElement*                      ceP,
      * Actually, the 'slash-escaped' ServicePath (variable: 'path') is sent to the function createEntity
      * which sets the ServicePath for the entity.
      */
+
     if (docs == 0)
     {
       if (strcasecmp(action.c_str(), "append") != 0)
@@ -1889,6 +1906,17 @@ void processContextElement(ContextElement*                      ceP,
             // Suitable CProvider has been found: creating response and returning
             std::string prApp = crrV[0]->contextRegistration.providingApplication.get();
             LM_T(LmtCtxProviders, ("context provide found: %s", prApp.c_str()));
+
+            if ((responseP->contextElementResponseVector.size() == 1) && (responseP->contextElementResponseVector[0]->statusCode.code == SccInvalidParameter))
+            {
+              //
+              // FIXME P5: If only one 'SccInvalidParameter-response', and a forwarding is taking place, it is safe to 
+              //           remove the old 'error-response' to make room for the new 'Found-response'.
+              //           If there is more than one response, something more intelligent is needed.
+              //
+              // responseP->contextElementResponseVector.vec.erase(responseP->contextElementResponseVector.vec.begin());
+            }
+
             buildGeneralErrorResponse(ceP, NULL, responseP, SccFound, prApp, &ceP->contextAttributeVector);
           }
           else
