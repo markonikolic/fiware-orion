@@ -1157,7 +1157,8 @@ static bool processContextAttributeVector (ContextElement*                      
                                            double&                                    coordLat,
                                            double&                                    coordLong,
                                            std::string                                tenant,
-                                           const std::vector<std::string>&            servicePathV)
+                                           const std::vector<std::string>&            servicePathV,
+                                           std::string*                               why)
 {
     EntityId*   eP         = &cerP->contextElement.entityId;
     std::string entityId   = cerP->contextElement.entityId.id;
@@ -1191,6 +1192,8 @@ static bool processContextAttributeVector (ContextElement*                      
                                       std::string("action: UPDATE") + 
                                       " - entity: [" + eP->toString() + "]" +
                                       " - offending attribute: " + targetAttr->toString());
+
+                *why = "Attribute Not Found";
                 return false;
 
             }
@@ -1740,11 +1743,16 @@ void processContextElement(ContextElement*                      ceP,
             coordLat     = loc.getField(ENT_LOCATION_COORDS).Array()[1].Double();
         }
 
-        if (!processContextAttributeVector(ceP, action, subsToNotify, attrs, cerP, locAttr, coordLat, coordLong, tenant, servicePathV))
+        std::string why;
+        if (!processContextAttributeVector(ceP, action, subsToNotify, attrs, cerP, locAttr, coordLat, coordLong, tenant, servicePathV, &why))
         {
             /* The entity wasn't actually modified, so we don't need to update it and we can continue with next one */
 
-            // KZ: First contextElementResponse created here
+            if (why != "Attribute Not Found") // Get into the 'if (docs == 0)' to check registrations for SccFound
+            {
+              ++docs;
+            }
+
             responseP->contextElementResponseVector.push_back(cerP);
             releaseTriggeredSubscriptions(subsToNotify);
             continue;
