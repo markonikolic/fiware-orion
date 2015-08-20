@@ -41,6 +41,12 @@ typedef struct JsonDelayedRelease
 {
   Entity*           entity;
   ContextAttribute* attribute;
+
+  JsonDelayedRelease()
+  {
+    entity = NULL;
+    attribute = NULL;
+  }
 } JsonDelayedRelease;
 
 
