@@ -53,6 +53,7 @@ CompoundValueNode::CompoundValueNode()
   siblingNo  = 0;
 
   LM_T(LmtCompoundValue, ("Created EMPTY compound node at %p", this));
+  LM_M(("CREATED compoundValueP at %p", this));
 }
 
 
@@ -72,6 +73,7 @@ CompoundValueNode::CompoundValueNode(orion::ValueType _type)
   siblingNo  = 0;
 
   LM_T(LmtCompoundValue, ("Created TOPLEVEL compound node (a %s) at %p", (valueType == orion::ValueTypeVector)? "Vector" : "Object", this));
+  LM_M(("CREATED compoundValueP at %p", this));
 }
 
 
@@ -106,6 +108,7 @@ CompoundValueNode::CompoundValueNode
                           siblingNo,
                           orion::valueTypeName(valueType),
                           this));
+  LM_M(("CREATED compoundValueP at %p", this));
 }
 
 /* ****************************************************************************
@@ -138,6 +141,7 @@ CompoundValueNode::CompoundValueNode
                           siblingNo,
                           orion::valueTypeName(valueType),
                           this));
+  LM_M(("CREATED compoundValueP at %p", this));
 }
 
 /* ****************************************************************************
@@ -170,6 +174,7 @@ CompoundValueNode::CompoundValueNode
                           siblingNo,
                           orion::valueTypeName(valueType),
                           this));
+  LM_M(("CREATED compoundValueP at %p", this));
 }
 
 /* ****************************************************************************
@@ -202,6 +207,7 @@ CompoundValueNode::CompoundValueNode
                           siblingNo,
                           orion::valueTypeName(valueType),
                           this));
+  LM_M(("CREATED compoundValueP at %p", this));
 }
 
 
@@ -212,6 +218,7 @@ CompoundValueNode::CompoundValueNode
 */
 CompoundValueNode::~CompoundValueNode()
 {
+  LM_M(("DELETING compoundValueP at %p", this));
   LM_T(LmtCompoundValue, ("Destroying node %p: name: '%s', path '%s' at %p (with %d children)", this, name.c_str(), path.c_str(), this, childV.size()));
 
   for (uint64_t ix = 0; ix < childV.size(); ++ix)

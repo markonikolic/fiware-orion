@@ -49,6 +49,8 @@ typedef struct EntityInfo
 
   EntityInfo() {}
   EntityInfo(const std::string& idPattern, const std::string& _entityType);
+  ~EntityInfo() { release(); }
+
   bool          match(const std::string& idPattern, const std::string& type);
   void          release(void);
   void          present(const std::string& prefix);

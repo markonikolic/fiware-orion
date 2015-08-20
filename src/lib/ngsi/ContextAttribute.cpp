@@ -258,6 +258,10 @@ ContextAttribute::ContextAttribute
 
   providingApplication.set("");
   providingApplication.setFormat(NOFORMAT);
+
+  LM_M(("cloned compoundValueP at %p", _compoundValueP));
+
+  LM_M(("copied compoundValueP at %p", compoundValueP));
 }
 
 
@@ -704,13 +708,18 @@ void ContextAttribute::present(const std::string& indent, int ix)
 */
 void ContextAttribute::release(void)
 {
+  LM_M(("HERE"));
   if (compoundValueP != NULL)
   {
+    LM_M(("DELETING compoundValueP at %p", compoundValueP));
     delete compoundValueP;
+    LM_M(("DELETED compoundValueP at %p", compoundValueP));
     compoundValueP = NULL;
   }
 
+  LM_M(("HERE"));
   metadataVector.release();
+  LM_M(("HERE"));
 }
 
 

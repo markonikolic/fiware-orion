@@ -29,7 +29,18 @@ brokerStart CB
 accumulatorStart
 
 --SHELL--
-url=/v1/updateContext
+
+#
+# 01. Create OfficeRoom/Room/temperature
+# 02. Create OfficeRoom2/Room/temperature
+# 03. Subscribe to OfficeRoom.*/Room/temperature with ONTIMEINTERVAL
+# 04. Unsubscribe
+# 05. Dump accumulator
+#
+
+
+echo "01. Create OfficeRoom/Room/temperature"
+echo "======================================"
 payload='<?xml version="1.0"?>
 <updateContextRequest>
   <contextElementList>
@@ -48,11 +59,12 @@ payload='<?xml version="1.0"?>
   </contextElementList>
   <updateAction>APPEND</updateAction>
 </updateContextRequest>'
-orionCurl --url "$url" --payload "$payload"
+orionCurl --url /v1/updateContext --payload "$payload"
+echo
 echo
 
-echo "1: ++++++++++++++++++++"
-url=/v1/updateContext
+echo "02. Create OfficeRoom2/Room/temperature"
+echo "======================================="
 payload='<?xml version="1.0"?>
 <updateContextRequest>
   <contextElementList>
@@ -71,11 +83,13 @@ payload='<?xml version="1.0"?>
   </contextElementList>
   <updateAction>APPEND</updateAction>
 </updateContextRequest>'
-orionCurl --url "$url" --payload "$payload"
+orionCurl --url /v1/updateContext --payload "$payload"
+echo
 echo
 
-echo "2: ++++++++++++++++++++"
-url="/v1/subscribeContext"
+
+echo "03. Subscribe to OfficeRoom.*/Room/temperature with ONTIMEINTERVAL"
+echo "=================================================================="
 payload='<?xml version="1.0"?>
 <subscribeContextRequest>
   <entityIdList>
@@ -99,33 +113,41 @@ payload='<?xml version="1.0"?>
     </notifyCondition>
   </notifyConditions>
 </subscribeContextRequest>'
-orionCurl --url "$url" --payload "$payload"
+orionCurl --url /v1/subscribeContext --payload "$payload"
 SUB_ID=$(echo "$_response" | grep subscriptionId | awk -F '>' '{print $2}' | awk -F '<' '{print $1}' | grep -v '^$' )
-
 echo
+echo
+
 
 # Wait 11 seconds, so we will receive 6 notifications (t=0, t=2, t=4, t=6, t=8, t=10)
 sleep 11
 valgrindSleep 1
 
-echo "3: ++++++++++++++++++++"
-url=/v1/unsubscribeContext
+
+echo "04. Unsubscribe"
+echo "==============="
 payload='<?xml version="1.0"?>
 <unsubscribeContextRequest>
   <subscriptionId>'$SUB_ID'</subscriptionId>
 </unsubscribeContextRequest>'
-orionCurl --url "$url" --payload "$payload"
+orionCurl --url /v1/unsubscribeContext --payload "$payload"
+echo
 echo
 
 
 # Get accumulated data (only the first notification and the notification times)
-echo "4: ++++++++++++++++++++"
+echo "05. Dump accumulator"
+echo "===================="
 accumulatorDump
 TIMES=$(curl localhost:${LISTENER_PORT}/times -s -S)
 echo "TIMES: $TIMES"
+echo
+echo
 
 
 --REGEXPECT--
+01. Create OfficeRoom/Room/temperature
+======================================
 HTTP/1.1 200 OK
 Content-Length: 640
 Content-Type: application/xml
@@ -155,7 +177,9 @@ Date: REGEX(.*)
   </contextResponseList>
 </updateContextResponse>
 
-1: ++++++++++++++++++++
+
+02. Create OfficeRoom2/Room/temperature
+=======================================
 HTTP/1.1 200 OK
 Content-Length: 641
 Content-Type: application/xml
@@ -185,7 +209,9 @@ Date: REGEX(.*)
   </contextResponseList>
 </updateContextResponse>
 
-2: ++++++++++++++++++++
+
+03. Subscribe to OfficeRoom.*/Room/temperature with ONTIMEINTERVAL
+==================================================================
 HTTP/1.1 200 OK
 Content-Length: 192
 Content-Type: application/xml
@@ -199,7 +225,9 @@ Date: REGEX(.*)
   </subscribeResponse>
 </subscribeContextResponse>
 
-3: ++++++++++++++++++++
+
+04. Unsubscribe
+===============
 HTTP/1.1 200 OK
 Content-Length: 207
 Content-Type: application/xml
@@ -214,7 +242,9 @@ Date: REGEX(.*)
   </statusCode>
 </unsubscribeContextResponse>
 
-4: ++++++++++++++++++++
+
+05. Dump accumulator
+====================
 POST http://127.0.0.1:REGEX(\d+)/notify
 Content-Length: 1286
 User-Agent: orion/REGEX(\d+\.\d+\.\d+.* libcurl/\d+\.\d+\.\d+)
@@ -516,6 +546,8 @@ Content-Type: application/xml
 </notifyContextRequest>
 =======================================
 TIMES: 0, 2, 4, 6, 8, 10
+
+
 --TEARDOWN--
 brokerStop CB
 accumulatorStop

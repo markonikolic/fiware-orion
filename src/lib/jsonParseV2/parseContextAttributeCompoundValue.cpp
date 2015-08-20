@@ -198,6 +198,7 @@ std::string parseContextAttributeCompoundValue
   if (caP->compoundValueP == NULL)
   {
     caP->compoundValueP            = new orion::CompoundValueNode();
+    LM_M(("compoundValueP at %p", caP->compoundValueP));
     caP->compoundValueP->name      = "TOP";
     caP->compoundValueP->container = caP->compoundValueP;
     caP->compoundValueP->valueType = stringToCompoundType(type);
