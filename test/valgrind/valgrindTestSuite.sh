@@ -98,6 +98,21 @@ function fileCleanup()
 
 # -----------------------------------------------------------------------------
 #
+# If any mongo database ftest-ftest exists, strange memory leaks appear ...
+# So, before starting, it's important to remove all ftest DBs
+#
+if [ -x scripts/dbResetAllFtest.sh ]
+then
+  scripts/dbResetAllFtest.sh
+else
+  echo "Can't find 'scripts/dbResetAllFtest.sh' ..."
+  exit 1
+fi
+
+
+
+# -----------------------------------------------------------------------------
+#
 # Init file already sourced?
 #
 if [ "$CONTEXTBROKER_TESTENV_SOURCED" != "YES" ]
@@ -387,13 +402,24 @@ function setNumberOfTests()
 #
 function failedTest()
 {
-  if [ "$3" != "0" ]
+  _file=$2
+  _lost=$3
+  _dir=$4
+
+  if [ "$_lost" != "0" ]
   then
-    echo "FAILED (lost: $3). Check $2.valgrind.out for clues"
+    echo "FAILED (lost: $_lost). Check $_file.valgrind.out for clues"
   fi
 
   testFailures=$testFailures+1
-  failedTests[$testFailures]=$2
+
+  if [ "$_dir" != "" ]
+  then
+    failedTests[$testFailures]=$_dir/$_file".test (lost $_lost bytes)"
+  else
+    failedTests[$testFailures]=$_file".test (lost $_lost bytes)"
+  fi
+
   failedTests[$testFailures+1]=$okString
 }
 
@@ -466,8 +492,8 @@ then
     testNo=$testNo+1
     printTestLinePrefix
 
-    init="$testNoString $vtest ............................................................................................................................."
-    init=${init:0:120}
+    init="$testNoString $vtest ..........................................................................................................................................................."
+    init=${init:0:150}
     echo -n $init" "
 
     typeset -i lines
@@ -512,7 +538,7 @@ then
         mv /tmp/accumulator_$LISTENER_PORT       $vtest.accumulator_$LISTENER_PORT
         mv /tmp/accumulator_$LISTENER2_PORT      $vtest.accumulator_$LISTENER2_PORT
 
-        failedTest "$vtest.valgrind.out" $vtest 0
+        failedTest "$vtest.valgrind.out" $vtest 0 "valgrind"
       else
         fileCleanup $vtest
 
@@ -526,7 +552,7 @@ then
 
     if [ "$lost" != "0" ]
     then
-      failedTest "test/valgrind/$vtest.*" $vtest $lost
+      failedTest "test/valgrind/$vtest.*" $vtest $lost "valgrind"
     elif [ "$vTestResult" == 0 ]
     then
       echo $okString
@@ -565,8 +591,8 @@ then
 
     testNo=$testNo+1
     printTestLinePrefix
-    init="$testNoString $dir/$htest ............................................................................................................................."
-    init=${init:0:120}
+    init="$testNoString $dir/$htest ..........................................................................................................................................................."
+    init=${init:0:150}
     echo -n $init" "
 
     # In the case of harness test, we check that the test is implemented checking
@@ -620,7 +646,7 @@ then
 
     if [ "$lost" != "0" ]
     then
-      failedTest "test/functionalTest/cases/$htest.valgrind.*" $htest $lost
+      failedTest "test/functionalTest/cases/$htest.valgrind.*" $htest $lost $dir
     else
       echo $okString $detailForOkString
     fi
