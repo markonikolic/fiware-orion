@@ -1184,7 +1184,6 @@ void exitFunc(void)
 {
   if (subCache != NULL)
   {
-    LM_M(("KZ: releasing subCache"));
     subCache->release();
     delete subCache;
     subCache = NULL;

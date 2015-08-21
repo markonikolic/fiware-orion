@@ -67,9 +67,7 @@ static void delayedRelease(JsonDelayedRelease* releaseP)
 
   if (releaseP->attribute != NULL)
   {
-    LM_M(("HERE"));
     releaseP->attribute->release();
-    LM_M(("HERE"));
     releaseP->attribute = NULL;
   }
 }

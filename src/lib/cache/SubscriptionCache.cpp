@@ -353,12 +353,10 @@ void SubscriptionCache::insert(const std::string& tenant, BSONObj bobj)
 
     EntityInfo* eiP = new EntityInfo(id, type);
     eiV.push_back(eiP);
-    LM_M(("KZ: Adding EntityInfo to EIV"));
   }
 
   if (eiV.size() == 0)
   {
-    LM_M(("KZ: eiV.size == 0"));
     return;
   }
 
@@ -398,8 +396,6 @@ void SubscriptionCache::insert(const std::string& tenant, BSONObj bobj)
     NotifyCondition* ncP = new NotifyCondition();
     ncP->type = condType;
 
-    LM_M(("KZ: Created NotifyCondition at %p", ncP));
-
     valueVec = condition.getField(CSUB_CONDITIONS_VALUE).Array();
     for (unsigned int vIx = 0; vIx < valueVec.size(); ++vIx)
     {
@@ -414,10 +410,8 @@ void SubscriptionCache::insert(const std::string& tenant, BSONObj bobj)
 
   if (notifyConditionVector.size() == 0)
   {
-    LM_M(("KZ: empty notifyConditionVector"));
     for (unsigned int ix = 0; ix < eiV.size(); ++ix)
     {
-      LM_M(("KZ: Deleting eiV[%d] at %p", ix, eiV[ix]));
       delete(eiV[ix]);
     }
     eiV.clear();
@@ -431,7 +425,6 @@ void SubscriptionCache::insert(const std::string& tenant, BSONObj bobj)
   //
   // 06. Create Subscription and add it to the subscription-cache
   //
-  LM_M(("KZ: Calling 'new Subscription' with eiv of %d entityInfos", eiV.size()));
   Subscription* subP = new Subscription(tenant,
                                         servicePath,
                                         subId,
@@ -511,13 +504,9 @@ int SubscriptionCache::remove
 */
 void SubscriptionCache::release(void)
 {
-  LM_M(("KZ: releasing SubscriptionCache (%d subscriptions)", subs.size()));
-
   for (unsigned int sIx = 0; sIx < subs.size(); ++sIx)
   {
-    LM_M(("KZ: calling release() for Subscription %d at %p", sIx, subs[sIx]));
     subs[sIx]->release();
-    LM_M(("KZ: deleting Subscription %d", sIx));
     delete(subs[sIx]);
   }
 

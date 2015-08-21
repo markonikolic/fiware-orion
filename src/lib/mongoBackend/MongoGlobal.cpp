@@ -1721,14 +1721,12 @@ bool entitiesQuery
         case Object:
           caP = new ContextAttribute(ca.name, ca.type, "");
           caP->compoundValueP = new orion::CompoundValueNode(orion::ValueTypeObject);
-          LM_M(("compoundValueP at %p", caP->compoundValueP));
           compoundObjectResponse(caP->compoundValueP, queryAttr.getField(ENT_ATTRS_VALUE));
           break;
 
         case Array:
           caP = new ContextAttribute(ca.name, ca.type, "");
           caP->compoundValueP = new orion::CompoundValueNode(orion::ValueTypeVector);
-          LM_M(("compoundValueP at %p", caP->compoundValueP));
           compoundVectorResponse(caP->compoundValueP, queryAttr.getField(ENT_ATTRS_VALUE));
           break;
 

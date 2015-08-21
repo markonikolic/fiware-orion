@@ -41,7 +41,6 @@ namespace orion
 */
 EntityInfo::EntityInfo(const std::string& idPattern, const std::string& _entityType)
 {
-  LM_M(("KZ: creating REGEX at %p", &entityIdPattern));
   regcomp(&entityIdPattern, idPattern.c_str(), 0);
   entityType = _entityType;
 }
@@ -79,7 +78,6 @@ bool EntityInfo::match
 */
 void EntityInfo::release(void)
 {
-  LM_M(("KZ: Releasing REGEX at %p", &entityIdPattern));
   regfree(&entityIdPattern);
 }
 

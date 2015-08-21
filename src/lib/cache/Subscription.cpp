@@ -128,7 +128,6 @@ Subscription::Subscription
 
     EntityInfo* eP = new EntityInfo(eIdP->id, eIdP->type);
     
-    LM_M(("KZ: Adding EntityInfo to Subscription at %p", this));
     entityIdInfoAdd(eP);
   }
 
@@ -203,7 +202,6 @@ Subscription::Subscription
 
   for (ix = 0; ix < _entityIdInfos.size(); ++ix)
   {
-    LM_M(("Adding EntityInfo at %p to Subscription at %p", _entityIdInfos[ix], this));
     entityIdInfos.push_back(_entityIdInfos[ix]);
   }
 

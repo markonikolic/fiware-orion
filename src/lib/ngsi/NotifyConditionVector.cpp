@@ -143,12 +143,9 @@ unsigned int NotifyConditionVector::size(void)
 */
 void NotifyConditionVector::release(void)
 {
-  LM_M(("KZ: releasing NotifyConditionVector"));
   for (unsigned int ix = 0; ix < vec.size(); ++ix)
   {
-    LM_M(("KZ: calling release() for NotifyCondition %d at %p", ix, vec[ix]));
     vec[ix]->release();
-    LM_M(("KZ: deleting NotifyCondition %d", ix));
     delete vec[ix];
   }
 

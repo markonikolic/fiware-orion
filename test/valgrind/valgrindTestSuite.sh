@@ -101,14 +101,28 @@ function fileCleanup()
 # If any mongo database ftest-ftest exists, strange memory leaks appear ...
 # So, before starting, it's important to remove all ftest DBs
 #
-if [ -x scripts/dbResetAllFtest.sh ]
-then
-  scripts/dbResetAllFtest.sh
-else
-  echo "Can't find 'scripts/dbResetAllFtest.sh' ..."
-  exit 1
-fi
+function dbReset()
+{
+  where=$1
 
+  if [ "$where" == "top" ]
+  then
+    resetScript=scripts/dbResetAllFtest.sh
+  else
+    resetScript=../../scripts/dbResetAllFtest.sh
+  fi
+
+  if [ -x $resetScript ]
+    then
+    $resetScript
+  else
+    pwd > /tmp/kz
+    echo "Can't find $resetScript ..."
+    exit 1
+  fi
+}
+
+dbReset top
 
 
 # -----------------------------------------------------------------------------
@@ -229,6 +243,7 @@ function add()
 function brokerStart()
 {
     # Starting contextBroker in valgrind with a clean database
+    dbReset middle
     killall contextBroker 2> /dev/null
     echo 'db.dropDatabase()' | mongo valgrindtest --quiet > /dev/null
     valgrind --memcheck:leak-check=full --show-reachable=yes --trace-children=yes contextBroker -port ${CB_TEST_PORT} -db leaktest -harakiri -t0-255 > ${NAME}.out 2>&1 &
@@ -658,7 +673,7 @@ if [ "${failedTests[1]}" != "" ]
 then
   echo
   echo
-  echo "$testFailures valgrind tests failed:"
+  echo "$testFailures tests leaked memory:"
   typeset -i ix
   ix=0
 
@@ -673,11 +688,11 @@ then
 fi
 
 
-if [ "${harnessErrorV[1]}" != "" ]
+if [ $harnessErrors != 0 ]
 then
   echo
   echo
-  echo "$harnessErrors harness tests failed:"
+  echo "$harnessErrors functional test failed (not a leak, just a failure):"
   typeset -i ix
   ix=0
 

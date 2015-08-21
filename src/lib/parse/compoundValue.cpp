@@ -61,7 +61,6 @@ void compoundValueStart
   ciP->compoundValueP    = new orion::CompoundValueNode(orion::ValueTypeObject);
   ciP->compoundValueRoot = ciP->compoundValueP;
 
-  LM_M(("compoundValueP at %p", ciP->compoundValueP));
   LM_T(LmtCompoundValueContainer, ("Set current container to '%s' (%s)",
                                    ciP->compoundValueP->path.c_str(),
                                    ciP->compoundValueP->name.c_str()));
