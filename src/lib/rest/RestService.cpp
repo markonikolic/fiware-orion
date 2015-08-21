@@ -493,7 +493,6 @@ std::string restService(ConnectionInfo* ciP, RestService* serviceV)
 
     if (ciP->apiVersion == "v2")
     {
-      // HERE the broker crashes
       delayedRelease(&jsonRelease);
     }
 

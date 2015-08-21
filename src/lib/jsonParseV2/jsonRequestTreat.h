@@ -44,7 +44,7 @@ typedef struct JsonDelayedRelease
 
   JsonDelayedRelease()
   {
-    entity = NULL;
+    entity    = NULL;
     attribute = NULL;
   }
 } JsonDelayedRelease;

@@ -108,7 +108,7 @@ static std::string parseContextAttributeObject(const Value& start, ContextAttrib
     else  // Metadata
     {
       Metadata*   mP = new Metadata();
-      
+
       mP->name       = iter->name.GetString();
       std::string r  = parseMetadata(iter->value, mP);
 
