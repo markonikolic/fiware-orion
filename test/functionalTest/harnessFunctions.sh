@@ -187,6 +187,93 @@ function dbResetAll()
 
 # ------------------------------------------------------------------------------
 #
+# brokerStopAwait
+#
+function brokerStopAwait
+{
+  port=$1
+
+  typeset -i loopNo
+  typeset -i loops
+  loopNo=0
+  loops=50
+
+  while [ $loopNo -lt $loops ]
+  do
+    nc -z localhost $port > /dev/null
+    if [ "$?" != "0" ]
+    then
+      vMsg The orion context broker on port $port has stopped
+      sleep 1
+      break;
+    fi
+
+    vMsg Awaiting orion context broker to fully stop '('$loopNo')' ...
+    sleep .2
+    loopNo=$loopNo+1
+  done
+
+  sleep .5
+
+  # Check CB NOT running fine
+  curl -s localhost:${port}/version | grep version > /dev/null
+  result=$?
+  if [ "$result" == "0" ]
+  then
+    result=1  # ERROR - the broker is still running
+  else
+    result=0
+  fi
+}
+
+
+
+# ------------------------------------------------------------------------------
+#
+# brokerStartAwait
+#
+function brokerStartAwait
+{
+  if [ "$BROKER_SLEEP" != "" ]
+  then
+    sleep $BROKER_SLEEP
+    result=0
+    return
+  fi
+
+  port=$1
+
+  typeset -i loopNo
+  typeset -i loops
+  loopNo=0
+  loops=50
+
+  while [ $loopNo -lt $loops ]
+  do
+    nc -z localhost $port > /dev/null
+    if [ "$?" == "0" ]
+    then
+      vMsg The orion context broker has started, listening on port $port
+      sleep 1
+      break;
+    fi
+
+    vMsg Awaiting valgrind to fully start the orion context broker '('$loopNo')' ...
+    sleep .2
+    loopNo=$loopNo+1
+  done
+
+  sleep .5
+
+  # Check that CB started fine
+  curl -s localhost:${port}/version | grep version > /dev/null
+  result=$?
+}
+
+
+
+# ------------------------------------------------------------------------------
+#
 # localBrokerStart
 #
 function localBrokerStart()
@@ -268,9 +355,19 @@ function localBrokerStart()
     # Wait some time so that the contextBroker is able to do its initial steps (reset database, start HTTP server, etc.)
     sleep 1
   else
+    #
+    # FIXME: What happens with valgrind when more than one broker is started ... ?
+    #
+    #
     valgrind $CB_START_CMD > /tmp/valgrind.out 2>&1 &
-    # Waiting for valgrind to start (sleep 10)
-    sleep 10s
+
+    # Waiting for valgrind to start (sleep max 10 secs)
+    brokerStartAwait $port  # FIXME ...
+    if [ "$result" != 0 ]
+    then
+      echo "Unable to start contextBroker"
+      exit 1
+    fi
   fi
 
   # Test to see whether we have a broker running on $port. If not raise an error
@@ -434,8 +531,9 @@ function brokerStop
     fi
   else
     curl localhost:${port}/exit/harakiri 2> /dev/null >> ${TEST_BASENAME}.valgrind.stop.out
-    # Waiting for valgrind to terminate (sleep 10)
-    sleep 10
+    # Waiting for valgrind to terminate (sleep a max of 10)
+    brokerStopAwait $port  # FIXME
+    # sleep 4
   fi
 }
 
@@ -1107,3 +1205,5 @@ export -f coapCurl
 export -f vMsg
 export -f dMsg
 export -f valgrindSleep
+export -f brokerStartAwait
+export -f brokerStopAwait

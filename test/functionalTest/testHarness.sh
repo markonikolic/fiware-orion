@@ -667,7 +667,7 @@ function runTest()
     # a try to start a broker while the old one (from the previous functest) is still running.
     # No way to test this, except with some patience.
     #
-    # We have seem 'ERROR 11' around once every 500-1000 functests (the suite is of almost 400 tests)
+    # We have seen 'ERROR 11' around once every 500-1000 functests (the suite is of almost 400 tests)
     # and this fix, if working, will make us not see those 'ERROR 11' again.
     # If we keep seeing 'ERROR 11' after this change then we will need to investigate further.
     #

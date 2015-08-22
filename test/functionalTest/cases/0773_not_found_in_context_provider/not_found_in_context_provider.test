@@ -26,8 +26,10 @@ Not Found In Context Provider
 --SHELL-INIT--
 dbInit CB
 dbInit CP1
+export BROKER_SLEEP=6
 brokerStart CB
 brokerStart CP1
+unset BROKER_SLEEP
 
 --SHELL--
 

@@ -58,7 +58,7 @@ Date: REGEX(.*)
 
 +++++ 2. statistics in JSON
 HTTP/1.1 200 OK
-Content-Length: 172
+Content-Length: 201
 Content-Type: application/json
 Date: REGEX(.*)
 
@@ -68,7 +68,8 @@ Date: REGEX(.*)
         "measuring_interval_in_secs": "REGEX(1?\d)", 
         "statisticsRequests": "2", 
         "uptime_in_secs": "REGEX(1?\d)", 
-        "xmlRequests": "1"
+        "versionRequests": "1",
+        "xmlRequests": "1",
     }
 }
 
