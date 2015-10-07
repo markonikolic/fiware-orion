@@ -467,7 +467,7 @@ void Subscription::present(const std::string& prefix)
 */
 void Subscription::presentShort(const std::string& prefix)
 {
-  LM_F(("%s{ tenant:'%s', sPath:'%s', eId0:'%s', attr0:'%s' }", prefix.c_str(), tenant.c_str(), servicePath.c_str(), entityIdInfos[0]->entityId.c_str(), attributes[0].c_str()));
+  LM_F(("%s{ tenant:'%s', sPath:'%s', eId0:'%s' }", prefix.c_str(), tenant.c_str(), servicePath.c_str(), entityIdInfos[0]->entityId.c_str()));
 }
 
 }

@@ -591,7 +591,9 @@ void SubscriptionCache::presentShort(const std::string& prefix)
 
   for (unsigned int ix = 0; ix < subs.size(); ++ix)
   {
+    LM_M(("subs[%d] at %p", ix, subs[ix]));
     subs[ix]->presentShort(prefix + "    ");
+    LM_M(("2"));
   }
 }
 }
