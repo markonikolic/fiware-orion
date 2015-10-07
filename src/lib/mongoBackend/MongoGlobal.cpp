@@ -325,6 +325,30 @@ extern bool getOrionDatabases(std::vector<std::string>& dbs)
 */
 std::string tenantFromDb(std::string& database)
 {
+  const char* db     = database.c_str();
+  const char* prefix = dbPrefix.c_str();
+
+  if (strncmp(db, prefix, strlen(prefix)) != 0)
+  {
+    LM_M(("KZ: kz-version: DB -> tenant: <%s> -> '' (1)", database.c_str(), &db[1]));
+    return "";
+  }
+
+  db = &db[strlen(prefix)];
+  if (*db != '-')
+  {
+    LM_M(("KZ: kz-version: DB -> tenant: <%s> -> '' (2)", database.c_str()));
+    return "";
+  }
+
+  LM_M(("KZ: kz-version: DB -> tenant: <%s> -> <%s>", database.c_str(), &db[1]));
+
+  return &db[1];
+}
+
+#if 0
+std::string tenantFromDb(std::string& database)
+{
   std::string r;
   std::string prefix  = dbPrefix + "-";
   if (strncmp(prefix.c_str(), database.c_str(), strlen(prefix.c_str())) == 0)
@@ -338,10 +362,11 @@ std::string tenantFromDb(std::string& database)
     r = "";
   }
 
-  LM_T(LmtMongo, ("DB -> tenant: <%s> -> <%s>", database.c_str(), r.c_str()));
+  LM_M(("KZ: Fermin version: DB -> tenant: <%s> -> <%s>", database.c_str(), r.c_str()));
   return r;
-
 }
+#endif
+
 
 
 /*****************************************************************************
@@ -2877,6 +2902,8 @@ void subscriptionsTreat(std::string database, MongoTreatFunction treatFunction)
   BSONObj                   query;
   DBClientBase*             connection = getMongoConnection();
   auto_ptr<DBClientCursor>  cursor;
+
+  LM_M(("KZ: Calling tenantFromDb (db == '%s')", database.c_str()));
 
   std::string tenant = tenantFromDb(database);
   try
