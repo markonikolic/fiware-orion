@@ -43,7 +43,7 @@ using namespace rapidjson;
 *
 * parseContextAttributeObject - 
 */
-static std::string parseContextAttributeObject(const Value& start, ContextAttribute* caP)
+std::string parseContextAttributeObject(const Value& start, ContextAttribute* caP)
 {
   for (Value::ConstMemberIterator iter = start.MemberBegin(); iter != start.MemberEnd(); ++iter)
   {

@@ -48,7 +48,8 @@
 * Payload Out: None
 *
 * URI parameters:
-*   op:    operation
+*   op:      operation
+*   options: keyValues
 */
 std::string postEntity
 (

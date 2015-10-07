@@ -35,6 +35,14 @@ using namespace rapidjson;
 
 /* ****************************************************************************
 *
+* parseContextAttributeObject - 
+*/
+extern std::string parseContextAttributeObject(const Value& start, ContextAttribute* caP);
+
+
+
+/* ****************************************************************************
+*
 * parseContextAttribute - 
 */
 extern std::string parseContextAttribute(ConnectionInfo* ciP, const Value::ConstMemberIterator& iter, ContextAttribute* caP);
