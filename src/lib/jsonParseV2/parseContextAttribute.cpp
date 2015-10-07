@@ -181,9 +181,10 @@ std::string parseContextAttribute(ConnectionInfo* ciP, const Value::ConstMemberI
     //
     // Either Compound or '{ "type": "xxx", "value": "yyy" }'
     //
-    // If the Object contains "value", then it is considered an object, not a compound
+    // If the Object contains "value", then it is considered an object, not a compound.
+    // Also, if URI param options=keyValues is set, then the object is always treated as a compound.
     //
-    if (iter->value.HasMember("value"))
+    if ((iter->value.HasMember("value")) && (ciP->uriParamOptions["keyValues"] == false))
     {
       r = parseContextAttributeObject(iter->value, caP);
       if (r != "OK")

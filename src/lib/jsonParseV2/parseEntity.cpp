@@ -34,63 +34,6 @@
 using namespace rapidjson;
 
 
-/* ****************************************************************************
-*
-* parseEntityWithKeyValues - 
-*/
-std::string parseEntityWithKeyValues(ConnectionInfo* ciP, Entity* eP, bool eidInURL)
-{
-  Document document;
-
-  document.Parse(ciP->payload);
-
-  if (document.HasParseError())
-  {
-    LM_W(("Bad Input (JSON parse error)"));
-    eP->errorCode.fill("ParseError", "Errors found in incoming JSON buffer");
-    ciP->httpStatusCode = SccBadRequest;;
-    return eP->render(ciP, EntitiesRequest);
-  }
-
-
-  if (!document.IsObject())
-  {
-    LM_E(("Bad Input (JSON Parse Error)"));
-    eP->errorCode.fill("ParseError", "Error parsing incoming JSON buffer");
-    ciP->httpStatusCode = SccBadRequest;;
-    return eP->render(ciP, EntitiesRequest);
-  }
-
-  if (document.HasMember("id"))
-  {
-    LM_W(("Bad Input (entity id specified in payload"));
-    eP->errorCode.fill("BadRequest", "entity id specified in payload");
-    ciP->httpStatusCode = SccBadRequest;;
-    return eP->render(ciP, EntitiesRequest);
-  }
-
-  for (Value::ConstMemberIterator iter = document.MemberBegin(); iter != document.MemberEnd(); ++iter)
-  {
-    std::string       name   = iter->name.GetString();
-    std::string       type   = jsonParseTypeNames[iter->value.GetType()];
-    ContextAttribute* caP = new ContextAttribute();
-
-    eP->attributeVector.push_back(caP);
-
-    std::string r = parseContextAttribute(ciP, iter, caP);
-    if (r != "OK")
-    {
-      LM_W(("Bad Input (parse error in context attribute)"));
-      eP->errorCode.fill("BadRequest", r);
-      ciP->httpStatusCode = SccBadRequest;
-      return eP->render(ciP, EntitiesRequest);
-    }
-  }
-
-  return "OK";
-}
-
-
 
 /* ****************************************************************************
 *
@@ -111,12 +54,6 @@ std::string parseEntityWithKeyValues(ConnectionInfo* ciP, Entity* eP, bool eidIn
 */
 std::string parseEntity(ConnectionInfo* ciP, Entity* eP, bool eidInURL)
 {
-  if (ciP->uriParamOptions["keyValues"] == true)
-  {
-    return parseEntityWithKeyValues(ciP, eP, eidInURL);
-  }
-
-
   Document document;
 
   document.Parse(ciP->payload);
@@ -217,15 +154,7 @@ std::string parseEntity(ConnectionInfo* ciP, Entity* eP, bool eidInURL)
       ContextAttribute*  caP = new ContextAttribute();
 
       eP->attributeVector.push_back(caP);
-
-      if (ciP->uriParamOptions["keyValues"] == false)
-      {
-        r = parseContextAttributeObject(iter->value, caP);
-      }
-      else
-      {
-        r = parseContextAttribute(ciP, iter, caP);
-      }
+      r = parseContextAttribute(ciP, iter, caP);
 
       if (r != "OK")
       {
