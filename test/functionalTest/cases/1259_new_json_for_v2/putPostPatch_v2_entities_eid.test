@@ -34,6 +34,12 @@ brokerStart CB
 # 02. GET /v2/entities/E1
 # 03. POST /v2/entities?options=keyValues, creating E2
 # 04. GET /v2/entities/E2
+# 05. POST /v2/entities/E2?options=keyValues
+# 06. GET /v2/entities/E2
+# 07. PUT /v2/entities/E2?options=keyValues
+# 08. GET /v2/entities/E2
+# 09. PATCH /v2/entities/E2?options=keyValues
+# 10. GET /v2/entities/E2
 #
 
 echo "01. POST /v2/entities/E1 complete"
