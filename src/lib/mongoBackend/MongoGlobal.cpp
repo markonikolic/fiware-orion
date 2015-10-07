@@ -279,7 +279,7 @@ extern bool getOrionDatabases(std::vector<std::string>& dbs)
     connection->runCommand("admin", BSON("listDatabases" << 1), result);
     releaseMongoConnection(connection);
 
-    LM_I(("Database Operation Successful (listDatabases command)"));
+    // Repsol LM_I(("Database Operation Successful (listDatabases command)"));
 
     std::vector<BSONElement> databases = result.getField("databases").Array();
 
@@ -323,10 +323,11 @@ extern bool getOrionDatabases(std::vector<std::string>& dbs)
 * corresponding tenant name as result (myservice1) or "" if the string doesn't
 * start with the database prefix
 */
-std::string tenantFromDb(std::string& database)
+std::string tenantFromDb2(std::string& database)
 {
   std::string r;
   std::string prefix  = dbPrefix + "-";
+  
   if (strncmp(prefix.c_str(), database.c_str(), strlen(prefix.c_str())) == 0)
   {
     char tenant[MAX_SERVICE_NAME_LEN];
@@ -342,6 +343,28 @@ std::string tenantFromDb(std::string& database)
   return r;
 
 }
+
+
+std::string tenantFromDb(std::string& database)
+{
+  const char* db     = database.c_str();
+  const char* prefix = dbPrefix.c_str();
+
+  if (strncmp(db, prefix, strlen(prefix)) != 0)
+  {
+    return "";
+  }
+
+  db = &db[strlen(prefix)];
+
+  if (*db != '-')
+  {
+    return "";
+  }
+
+  return &db[1];
+}
+
 
 
 /*****************************************************************************
@@ -2879,6 +2902,8 @@ void subscriptionsTreat(std::string database, MongoTreatFunction treatFunction)
   auto_ptr<DBClientCursor>  cursor;
 
   std::string tenant = tenantFromDb(database);
+  LM_M(("Repsol: database: '%s', tenant: '%s'", database.c_str(), tenant.c_str()));
+
   try
   {
     cursor = connection->query(getSubscribeContextCollectionName(tenant).c_str(), query);
@@ -2894,7 +2919,7 @@ void subscriptionsTreat(std::string database, MongoTreatFunction treatFunction)
     }
     releaseMongoConnection(connection);
 
-    LM_I(("Database Operation Successful (%s)", query.toString().c_str()));
+    // Repsol: LM_I(("Database Operation Successful (%s)", query.toString().c_str()));
   }
   catch (const DBException &e)
   {
@@ -2914,6 +2939,7 @@ void subscriptionsTreat(std::string database, MongoTreatFunction treatFunction)
   {
     BSONObj sub = cursor->next();
 
+    LM_M(("Repsol: calling sub-treatFunction with tenant '%s'", tenant.c_str()));
     treatFunction(tenant, sub);
   }
 }

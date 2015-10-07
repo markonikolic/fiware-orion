@@ -89,6 +89,7 @@ public:
   void           release();
   int            refresh(void);
   void           present(const std::string& prefix);
+  void           presentShort(const std::string& prefix);
   int            size(void) { return subs.size(); }
   Subscription*  lookupById(const std::string&       tenant,
                             const std::string&       servicePath,

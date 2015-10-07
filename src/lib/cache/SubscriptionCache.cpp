@@ -166,15 +166,32 @@ void SubscriptionCache::lookup
   std::vector<Subscription*>*  subV
 )
 {
+  bool Repsol = false;
+
+  LM_M(("Repsol: LOOKING up a subscription with { tenant: '%s', servicePath: '%s', id: '%s', type: '%s', attributeName: '%s' }",
+        tenant.c_str(),
+        servicePath.c_str(),
+        id.c_str(),
+        type.c_str(),
+        attributeName.c_str()));
+
+  presentShort("Repsol: ");
+
+
   for (unsigned int ix = 0; ix < subs.size(); ++ix)
   {
     if (subs[ix]->match(tenant, servicePath, id, type, attributeName))
     {
+      LM_M(("Repsol: found a subscription"));
       subV->push_back(subs[ix]);
+      Repsol = true;
     }
   }
 
   ++noOfSubCacheLookups;
+
+  if (Repsol == false)
+    LM_M(("Repsol: did not find any subscription"));
 }
 
 
@@ -209,9 +226,11 @@ Subscription* SubscriptionCache::lookupById
       continue;
     }
 
+    LM_M(("Repsol: found a subscription"));
     return subs[ix];
   }
 
+  LM_M(("Repsol: did not find any subscription"));
   return NULL;
 }
 
@@ -223,6 +242,8 @@ Subscription* SubscriptionCache::lookupById
 */
 static void subToCache(std::string tenant, BSONObj& bobj)
 {
+  LM_M(("Repsol: inserting a subscription from DB into the subscription cache. tenant: '%s'", tenant.c_str()));
+
   subCache->insert(tenant, bobj);
 }
 
@@ -254,6 +275,11 @@ void SubscriptionCache::fillFromDb(void)
   // Add the 'default tenant'
   //
   databases.push_back(dbPrefix);
+
+  for (unsigned int ix = 0; ix < databases.size(); ++ix)
+  {
+    LM_M(("Tenant %d: '%s'", ix, databases[ix].c_str()));
+  }
 
   for (unsigned int ix = 0; ix < databases.size(); ++ix)
   {
@@ -468,10 +494,13 @@ int SubscriptionCache::remove(Subscription* subP)
 
       ++noOfSubCacheRemovals;
       --noOfSubCacheEntries;
+
+      LM_M(("Repsol: removed a subscription"));
       return 0;
     }
   }
 
+  LM_M(("Repsol: failed to remove a subscription"));
   ++noOfSubCacheRemovalFailures;
   return -1;
 }
@@ -550,4 +579,19 @@ void SubscriptionCache::present(const std::string& prefix)
   }
 }
 
+
+
+/* ****************************************************************************
+*
+* SubscriptionCache::presentShort - 
+*/
+void SubscriptionCache::presentShort(const std::string& prefix)
+{
+  LM_F(("%sSubscription Cache with %d subscriptions", prefix.c_str(), subs.size()));
+
+  for (unsigned int ix = 0; ix < subs.size(); ++ix)
+  {
+    subs[ix]->presentShort(prefix + "    ");
+  }
+}
 }

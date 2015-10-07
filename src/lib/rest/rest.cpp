@@ -464,8 +464,9 @@ static void requestCompleted
   delete(ciP);
   *con_cls = NULL;
 
-  LM_TRANSACTION_END();  // Incoming REST request ends
+  // Repsol LM_TRANSACTION_END();  // Incoming REST request ends
 }
+
 
 
 /* ****************************************************************************
@@ -932,7 +933,7 @@ static int connectionTreat
     //
     // Transaction starts here
     //
-    LM_TRANSACTION_START("from", ip, port, url);  // Incoming REST request starts
+    // Repsol LM_TRANSACTION_START("from", ip, port, url);  // Incoming REST request starts
 
 
 

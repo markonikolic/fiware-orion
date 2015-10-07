@@ -47,6 +47,7 @@ typedef struct EntityInfo
   regex_t       entityIdPattern;
   std::string   entityType;
   bool          entityIdPatternToBeFreed;
+  std::string   entityId;
 
   EntityInfo() {}
   EntityInfo(const std::string& idPattern, const std::string& _entityType);

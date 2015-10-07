@@ -1176,7 +1176,7 @@ static bool addTriggeredSubscriptions
     }
     releaseMongoConnection(connection);
 
-    LM_I(("Database Operation Successful (%s)", query.toString().c_str()));
+    // Repsol LM_I(("Database Operation Successful (%s)", query.toString().c_str()));
   }
   catch (const DBException &e)
   {
@@ -1353,9 +1353,9 @@ static bool processSubscriptions
         connection->update(getSubscribeContextCollectionName(tenant).c_str(), query, update);
         releaseMongoConnection(connection);
 
-        LM_I(("Database Operation Successful (update: %s, query: %s)",
-              update.toString().c_str(),
-              query.toString().c_str()));
+        // Repsol LM_I(("Database Operation Successful (update: %s, query: %s)",
+        // update.toString().c_str(),
+        // query.toString().c_str()));
 
         //
         // Saving lastNotificationTime for cached subscription
@@ -2013,7 +2013,7 @@ static bool createEntity
     connection->insert(getEntitiesCollectionName(tenant).c_str(), insertedDoc);
     releaseMongoConnection(connection);
 
-    LM_I(("Database Operation Successful (insert %s)", insertedDoc.toString().c_str()));
+    // Repsol LM_I(("Database Operation Successful (insert %s)", insertedDoc.toString().c_str()));
   }
   catch (const DBException &e)
   {
@@ -2093,7 +2093,7 @@ static bool removeEntity
     connection->remove(getEntitiesCollectionName(tenant).c_str(), query);
     releaseMongoConnection(connection);
 
-    LM_I(("Database Operation Successful (remove %s)", query.toString().c_str()));
+    // Repsol LM_I(("Database Operation Successful (remove %s)", query.toString().c_str()));
   }
   catch (const DBException &e)
   {
@@ -2358,7 +2358,7 @@ void processContextElement
     {
       entitiesNumber = connection->count(getEntitiesCollectionName(tenant).c_str(), query);
       releaseMongoConnection(connection);
-      LM_I(("Database Operation Successful (%s)", query.toString().c_str()));
+      // Repsol LM_I(("Database Operation Successful (%s)", query.toString().c_str()));
     }
     catch (const DBException &e)
     {
@@ -2418,7 +2418,7 @@ void processContextElement
     }
     releaseMongoConnection(connection);
 
-    LM_I(("Database Operation Successful (%s)", query.toString().c_str()));
+    // Repsol LM_I(("Database Operation Successful (%s)", query.toString().c_str()));
   }
   catch (const DBException &e)
   {
@@ -2687,7 +2687,7 @@ void processContextElement
       connection->update(getEntitiesCollectionName(tenant).c_str(), query, updatedEntityObj);
       releaseMongoConnection(connection);
 
-      LM_I(("Database Operation Successful (update %s)", query.toString().c_str()));
+      // Repsol LM_I(("Database Operation Successful (update %s)", query.toString().c_str()));
     }
     catch (const DBException &e)
     {

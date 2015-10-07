@@ -213,6 +213,7 @@ HttpStatusCode mongoSubscribeContext
     {
       std::string oidString = oid.toString();
 
+      LM_M(("Repsol: inserting subscription for tenant '%s'", tenant.c_str()));
       orion::subCache->insert(new orion::Subscription(tenant, servicePath, requestP, oidString, expiration, notifyFormat));
     }
 

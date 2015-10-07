@@ -427,6 +427,7 @@ std::string restService(ConnectionInfo* ciP, RestService* serviceV)
     }
 
     LM_T(LmtService, ("Treating service %s %s", serviceV[ix].verb.c_str(), ciP->url.c_str())); // Sacred - used in 'heavyTest'
+    LM_M(("Repsol: Treating service %s %s", serviceV[ix].verb.c_str(), ciP->url.c_str()));
     statisticsUpdate(serviceV[ix].request, ciP->inFormat);
 
     // Tenant to connectionInfo

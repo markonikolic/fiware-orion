@@ -41,6 +41,8 @@ namespace orion
 */
 EntityInfo::EntityInfo(const std::string& idPattern, const std::string& _entityType)
 {
+  entityId = idPattern;
+
   regcomp(&entityIdPattern, idPattern.c_str(), 0);
 
   entityType               = _entityType;

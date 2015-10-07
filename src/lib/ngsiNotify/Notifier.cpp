@@ -64,6 +64,8 @@ void Notifier::sendNotifyContextRequest(NotifyContextRequest* ncr, const std::st
 {
     ConnectionInfo ci;
 
+    LM_M(("Repsol: sending notification: %s", url.c_str()));
+
     //
     // Creating the value of the Fiware-ServicePath HTTP header.
     // This is a comma-separated list of the service-paths in the same order as the entities come in the payload

@@ -115,6 +115,7 @@ class Subscription
   bool attributeMatch(const std::string& attributeName);
   bool hasAttribute(const std::string&attributeName);
   void present(const std::string& prefix);
+  void presentShort(const std::string& prefix);
   void release(void);
 };
 

@@ -75,6 +75,8 @@ Subscription::Subscription
   lastNotificationTime  = -1;
   pendingNotifications  = 0;
   format                = _format;
+
+  LM_M(("Repsol: new Subscription created: tenant: '%s'", _tenant.c_str()));
 }
 
 
@@ -455,6 +457,17 @@ void Subscription::present(const std::string& prefix)
   LM_F(("%slastNotificationTime: %lu",  prefix.c_str(), lastNotificationTime));
   LM_F(("%spendingNotifications: %lu",  prefix.c_str(), pendingNotifications));
   LM_F(("%snotification format:  %s",   prefix.c_str(), (format == XML)? "XML" : "JSON"));
+}
+
+
+
+/* ****************************************************************************
+*
+* Subscription::presentShort - 
+*/
+void Subscription::presentShort(const std::string& prefix)
+{
+  LM_F(("%s{ tenant:'%s', sPath:'%s', eId0:'%s', attr0:'%s' }", prefix.c_str(), tenant.c_str(), servicePath.c_str(), entityIdInfos[0]->entityId.c_str(), attributes[0].c_str()));
 }
 
 }
