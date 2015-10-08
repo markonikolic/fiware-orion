@@ -1268,8 +1268,10 @@ export -f accumulatorStart
 export -f accumulatorStop
 export -f accumulatorDump
 export -f accumulator2Dump
+export -f accumulator3Dump
 export -f accumulatorCount
 export -f accumulator2Count
+export -f accumulator3Count
 export -f orionCurl
 export -f dbInsertEntity
 export -f mongoCmd
