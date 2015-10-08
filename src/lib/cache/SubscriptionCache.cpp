@@ -269,6 +269,8 @@ void SubscriptionCache::fillFromDb(void)
 */
 void SubscriptionCache::insert(Subscription* subP)
 {
+  LM_M(("Vic: adding sub '%s' to cache", subP->subscriptionId.c_str()));
+
   if (subP->entityIdInfos.size() == 0)
   {
     LM_E(("Runtime Error (no entity for subscription - not inserted in subscription cache)"));
