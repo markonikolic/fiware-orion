@@ -2926,13 +2926,18 @@ void subscriptionsTreat(std::string database, MongoTreatFunction treatFunction)
   }
 
   LM_M(("Vic: Database Operation Successful (%s)", query.toString().c_str()));
+  LM_M(("Vic: tenant: '%s'", tenant.c_str()));
   LM_M(("Vic: getSubscribeContextCollectionName: '%s'", getSubscribeContextCollectionName(tenant).c_str()));
   // Call the treat function for each subscription
   while (cursor->more())
   {
+    static int count = 0;
+
+    ++count;
+
     BSONObj sub = cursor->next();
 
-    LM_M(("Vic: calling treatFunction for tenant '%s'", tenant.c_str()));
+    LM_M(("Vic %03d: calling treatFunction for tenant '%s'", count, tenant.c_str()));
     treatFunction(tenant, sub);
   }
 }
