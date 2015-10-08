@@ -2894,10 +2894,18 @@ void subscriptionsTreat(std::string database, MongoTreatFunction treatFunction)
   DBClientBase*             connection = getMongoConnection();
   auto_ptr<DBClientCursor>  cursor;
 
+  LM_M(("Vic: database: '%s'", database.c_str()));
   std::string tenant = tenantFromDb(database);
+  LM_M(("Vic: tenant == '%s'", tenant.c_str()));
+
   try
   {
-    cursor = connection->query(getSubscribeContextCollectionName(tenant).c_str(), query);
+    const char* collectionName = getSubscribeContextCollectionName(tenant).c_str();
+
+    LM_M(("Vic: collectionName: '%s'", collectionName));
+    LM_M(("Vic: query: '%s'", query.toString().c_str()));
+
+    cursor = connection->query(collectionName, query);
 
     /*
      * We have observed that in some cases of DB errors (e.g. the database daemon is down) instead of
@@ -2906,7 +2914,10 @@ void subscriptionsTreat(std::string database, MongoTreatFunction treatFunction)
      */
     if (cursor.get() == NULL)
     {
-      throw DBException("Null cursor from mongo (details on this is found in the source code)", 0);
+      LM_E(("Database Error (mongo::query() has set the cursor to NULL)"));
+      releaseMongoConnection(connection);
+      return;
+      // throw DBException("Null cursor from mongo (details on this is found in the source code)", 0);
     }
     releaseMongoConnection(connection);
 
@@ -2929,15 +2940,33 @@ void subscriptionsTreat(std::string database, MongoTreatFunction treatFunction)
   LM_M(("Vic: tenant: '%s'", tenant.c_str()));
   LM_M(("Vic: getSubscribeContextCollectionName: '%s'", getSubscribeContextCollectionName(tenant).c_str()));
   // Call the treat function for each subscription
-  while (cursor->more())
+
+  if (cursor.get() == NULL)  // Impossible, right ;-)
   {
-    static int count = 0;
+    LM_E(("Database Error (NULL cursor)"));
+    return;
+  }
 
-    ++count;
+  int count = 0;
+  static int call = 0;
 
-    BSONObj sub = cursor->next();
+  ++call;
 
-    LM_M(("Vic %03d: calling treatFunction for tenant '%s'", count, tenant.c_str()));
-    treatFunction(tenant, sub);
+  try
+  {
+    while (cursor->more())
+    {
+      ++count;
+
+      BSONObj sub = cursor->next();
+      
+      LM_M(("Vic %d.%0d: calling treatFunction for tenant '%s'", call, count, tenant.c_str()));
+      treatFunction(tenant, sub);
+    }
+  }
+  catch (...)
+  {
+    LM_E(("Database Error (unexpected exception ...)"));
+    return;
   }
 }
