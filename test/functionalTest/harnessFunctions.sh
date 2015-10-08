@@ -703,6 +703,7 @@ function accumulatorDump()
 }
 
 
+
 # ------------------------------------------------------------------------------
 #
 # accumulator2Dump
@@ -718,6 +719,26 @@ function accumulator2Dump()
     curl localhost:${LISTENER2_PORT}/dump -s -S 2> /dev/null
   fi
 }
+
+
+
+# ------------------------------------------------------------------------------
+#
+# accumulator3Dump
+#
+function accumulator3Dump()
+{
+  valgrindSleep 2
+
+  if [ "$1" == "IPV6" ]
+  then
+    curl -g [::1]:${LISTENER3_PORT}/dump -s -S 2> /dev/null
+  else
+    curl localhost:${LISTENER3_PORT}/dump -s -S 2> /dev/null
+  fi
+}
+
+
 
 # ------------------------------------------------------------------------------
 #
@@ -735,6 +756,8 @@ function accumulatorCount()
   fi
 }
 
+
+
 # ------------------------------------------------------------------------------
 #
 # accumulator2Count
@@ -750,6 +773,26 @@ function accumulator2Count()
     curl localhost:${LISTENER2_PORT}/number -s -S 2> /dev/null
   fi
 }
+
+
+
+# ------------------------------------------------------------------------------
+#
+# accumulator3Count
+#
+function accumulator3Count()
+{
+  valgrindSleep 2
+
+  if [ "$1" == "IPV6" ]
+  then
+    curl -g [::1]:${LISTENER3_PORT}/number -s -S 2> /dev/null
+  else
+    curl localhost:${LISTENER3_PORT}/number -s -S 2> /dev/null
+  fi
+}
+
+
 
 # ------------------------------------------------------------------------------
 #

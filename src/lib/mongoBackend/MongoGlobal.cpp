@@ -326,23 +326,24 @@ extern bool getOrionDatabases(std::vector<std::string>& dbs)
 */
 std::string tenantFromDb(std::string& database)
 {
-  std::string r;
-  std::string prefix  = dbPrefix + "-";
-  if (strncmp(prefix.c_str(), database.c_str(), strlen(prefix.c_str())) == 0)
+  const char* db     = database.c_str();
+  const char* prefix = dbPrefix.c_str();
+
+  if (strncmp(db, prefix, strlen(prefix)) != 0)
   {
-    char tenant[MAX_SERVICE_NAME_LEN];
-    strcpy(tenant, prefix.c_str() + strlen(prefix.c_str()));
-    r = std::string(tenant);
-  }
-  else
-  {
-    r = "";
+    return "";
   }
 
-  LM_T(LmtMongo, ("DB -> tenant: <%s> -> <%s>", database.c_str(), r.c_str()));
-  return r;
+  db = &db[strlen(prefix)];
 
+  if (*db != '-')
+  {
+    return "";
+  }
+
+  return &db[1];
 }
+
 
 
 /*****************************************************************************
@@ -353,6 +354,7 @@ void setEntitiesCollectionName(std::string name)
 {
   entitiesCollectionName = name;
 }
+
 
 
 /*****************************************************************************
