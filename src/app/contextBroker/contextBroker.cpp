@@ -1170,7 +1170,7 @@ void orionExit(int code, const std::string& reason)
   // Cancel all threads to avoid false leaks in valgrind
   //
   std::vector<std::string> dbs;
-  getOrionDatabases(dbs);
+  getOrionDatabases(&dbs);
   for (unsigned int ix = 0; ix < dbs.size(); ++ix)
   {
     destroyAllOntimeIntervalThreads(dbs[ix]);
@@ -1242,7 +1242,7 @@ static void contextBrokerInit(bool ngsi9Only, std::string dbPrefix, bool multite
     {
       /* We get tenant database names and recover ontime interval threads on each one */
       std::vector<std::string> orionDbs;
-      getOrionDatabases(orionDbs);
+      getOrionDatabases(&orionDbs);
       for (unsigned int ix = 0; ix < orionDbs.size(); ++ix)
       {
         std::string orionDb = orionDbs[ix];
@@ -1312,7 +1312,7 @@ static void mongoInit
   {
     /* We get tenant database names and apply ensure the location index in each one */
     std::vector<std::string> orionDbs;
-    getOrionDatabases(orionDbs);
+    getOrionDatabases(&orionDbs);
     for (unsigned int ix = 0; ix < orionDbs.size(); ++ix)
     {
       std::string orionDb = orionDbs[ix];

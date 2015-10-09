@@ -562,6 +562,7 @@ std::string httpRequestSend
   char*                      what               = (char*) "static";
   char*                      msgDynamic         = NULL;
   char*                      msg                = msgStatic;   // by default, use the static buffer
+  int                        msgSize            = sizeof(msgStatic);
   std::string                rushHeaderIP       = "";
   unsigned short             rushHeaderPort     = 0;
   std::string                rushHttpHeaders    = "";
@@ -637,7 +638,7 @@ std::string httpRequestSend
       ip             = rushHost;
       port           = rushPort;
 
-      sprintf(portAsString, "%d", (int) rushHeaderPort);
+      snprintf(portAsString, sizeof(portAsString), "%d", (int) rushHeaderPort);
       rushHttpHeaders = "X-relayer-host: " + rushHeaderIP + ":" + portAsString + "\n";
       if (protocol == "https:")
         rushHttpHeaders += "X-relayer-protocol: https\n";
@@ -681,17 +682,20 @@ std::string httpRequestSend
 
     snprintf(tenantHeader, sizeof(tenantHeader), "fiware-service: %s\n", tenant.c_str());
 
-    strncat(preContent, tenantHeader, sizeof(preContent) - strlen(preContent));
+    strncat(preContent, tenantHeader, sizeof(preContent) - strlen(preContent) - 1);
   }
 
   if (!content.empty())
   {
     char   headers[512];
-    sprintf(headers,
-            "Content-Type: %s\n"
-            "Content-Length: %zu\n",
-            content_type.c_str(), content.length() + 1);
-    strncat(preContent, headers, sizeof(preContent) - strlen(preContent));
+
+    snprintf(headers,
+	     sizeof(headers),
+	     "Content-Type: %s\n"
+	     "Content-Length: %zu\n",
+	     content_type.c_str(), content.length() + 1);
+
+    strncat(preContent, headers, sizeof(preContent) - strlen(preContent) - 1);
 
     /* Choose the right buffer (static or dynamic) to use. Note we are using +3 due to:
      *    + 1, for the \n between preContent and content
@@ -713,23 +717,22 @@ std::string httpRequestSend
           return "error";
         }
 
-        msg  = msgDynamic;
-        what = (char*) "dynamic";
+        msg     = msgDynamic;
+	msgSize = neededSize;
+        what    = (char*) "dynamic";
     }
 
-    /* The above checking should ensure that the three parts fit, so we are using
-     * sprint() instead of snprintf() */
-    sprintf(msg, "%s\n%s", preContent, content.c_str());
+    snprintf(msg, msgSize - 2, "%s\n%s", preContent, content.c_str());
   }
   else
   {
     /* In the case of no-content we assume that MAX_STA_MSG_SIZE is enough to send the message */
     LM_T(LmtClientOutputPayload, ("Using static buffer to send HTTP request (empty content)"));
-    sprintf(msg, "%s\n", preContent);
+    snprintf(msg, msgSize - 2, "%s\n", preContent);
   }
 
   /* We add a final newline (I guess that HTTP protocol needs it) */
-  strcat(msg, "\n");
+  strncat(msg, "\n", msgSize - strlen(msg) - 1);
 
   int fd = httpRequestConnect(ip, port); // Connecting to HTTP server
 

@@ -270,7 +270,7 @@ extern void setDbPrefix(std::string _dbPrefix)
 *
 * getOrionDatabases -
 */
-extern bool getOrionDatabases(std::vector<std::string>& dbs)
+bool getOrionDatabases(std::vector<std::string>* dbsP)
 {
   BSONObj       result;
   DBClientBase* connection = getMongoConnection();
@@ -293,7 +293,7 @@ extern bool getOrionDatabases(std::vector<std::string>& dbs)
       if (strncmp(prefix.c_str(), dbName.c_str(), strlen(prefix.c_str())) == 0)
       {
         LM_T(LmtMongo, ("Orion database found: %s", dbName.c_str()));
-        dbs.push_back(dbName);
+        dbsP->push_back(dbName);
         LM_T(LmtBug, ("Pushed back db name '%s'", dbName.c_str()));
       }
     }
@@ -331,7 +331,7 @@ std::string tenantFromDb(std::string& database)
   if (strncmp(prefix.c_str(), database.c_str(), strlen(prefix.c_str())) == 0)
   {
     char tenant[MAX_SERVICE_NAME_LEN];
-    strcpy(tenant, prefix.c_str() + strlen(prefix.c_str()));
+    strncpy(tenant, database.c_str() + strlen(prefix.c_str()), sizeof(tenant) - 1);
     r = std::string(tenant);
   }
   else
@@ -2888,9 +2888,11 @@ std::string dbDotDecode(std::string s)
 */
 void subscriptionsTreat(std::string database, MongoTreatFunction treatFunction)
 {
-  BSONObj                   query;
+  BSONObj                   query = BSON("conditions.type" << "ONCHANGE");
   DBClientBase*             connection = getMongoConnection();
+  unsigned int              check01    = 0xFEEDC0DE;
   auto_ptr<DBClientCursor>  cursor;
+  unsigned int              check02    = 0xFEEDC0DE;
 
   std::string tenant = tenantFromDb(database);
   try
@@ -2921,6 +2923,11 @@ void subscriptionsTreat(std::string database, MongoTreatFunction treatFunction)
     releaseMongoConnection(connection);
     LM_E(("Database Error (generic exception)"));
     return;
+  }
+
+  if ((check01 != 0xFEEDC0DE) || (check02 != 0xFEEDC0DE))
+  {
+    printf("check01: 0x%x, check02; 0x%x\n", check01, check02);
   }
 
   // Call the treat function for each subscription

@@ -246,14 +246,21 @@ void SubscriptionCache::init(void)
 */
 void SubscriptionCache::fillFromDb(void)
 {
+  unsigned int              check01    = 0xFEEDC0DE;
   std::vector<std::string> databases;
+  unsigned int              check02    = 0xFEEDC0DE;
 
-  getOrionDatabases(databases);
+  getOrionDatabases(&databases);
 
   //
   // Add the 'default tenant'
   //
   databases.push_back(dbPrefix);
+
+  if ((check01 != 0xFEEDC0DE) || (check02 != 0xFEEDC0DE))
+  {
+    printf("check01: 0x%x, check02; 0x%x\n", check01, check02);
+  }
 
   for (unsigned int ix = 0; ix < databases.size(); ++ix)
   {
@@ -524,11 +531,13 @@ void SubscriptionCache::release(void)
 */
 int SubscriptionCache::refresh(void)
 {
+
   semTake();
   release();
   fillFromDb();
   semGive();
 
+  printf("Refreshed sub-cache: %lu subs\n", subs.size());
   return 0;
 }
 

@@ -227,7 +227,7 @@ extern void setDbPrefix(std::string dbPrefix);
 * true otherwise.
 *
 */
-extern bool getOrionDatabases(std::vector<std::string>& dbs);
+extern bool getOrionDatabases(std::vector<std::string>* dbsP);
 
 /*****************************************************************************
 *

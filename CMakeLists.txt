@@ -48,7 +48,7 @@ execute_process(COMMAND            sh ../scripts/build/osDistro.sh
 execute_process(COMMAND            sh ../scripts/rapidxmlVersion.sh
                 OUTPUT_VARIABLE    RAPIDXML_VERSION)
 
-add_definitions(-DLM_ON)
+#add_definitions(-DLM_ON)
 add_definitions(-fPIC)
 add_definitions(${RAPIDXML_VERSION})
 
@@ -172,7 +172,6 @@ if (error EQUAL 0)
   ADD_SUBDIRECTORY(src/lib/mongoBackend)
   ADD_SUBDIRECTORY(src/lib/cache)
   ADD_SUBDIRECTORY(src/app/contextBroker)
-  ADD_SUBDIRECTORY(src/app/proxyCoap)
 else ()
     MESSAGE("cmake: NOT OK")
 endif (error EQUAL 0)
