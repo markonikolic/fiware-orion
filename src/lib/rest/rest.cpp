@@ -1208,15 +1208,22 @@ void restInit
   strncpy(bindIPv6, LOCAL_IP_V6, MAX_LEN_IP - 1);
 
   if (isIPv6(std::string(_bindAddress)))
+  {
     strncpy(bindIPv6, _bindAddress, MAX_LEN_IP - 1);
+  }
   else
+  {
     strncpy(bindIp, _bindAddress, MAX_LEN_IP - 1);
+  }
 
+#if 0
+  // FIXME P8: What's this?
   if ((_ipVersion == IPV4) || (_ipVersion == IPDUAL))
      strncpy(bindIp, bindIp, MAX_LEN_IP - 1);
 
   if ((_ipVersion == IPV6) || (_ipVersion == IPDUAL))
      strncpy(bindIPv6, bindIPv6, MAX_LEN_IP - 1);
+#endif
 
   // Starting REST interface
   int r;

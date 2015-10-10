@@ -80,7 +80,8 @@ void subCacheMutexWaitingTimeGet(char* buf, int bufLen)
 */
 SubscriptionCache::SubscriptionCache()
 {
-  dbPrefix = "";
+  dbPrefix    = "";
+  mutexOwner  = 0;
 }
 
 
@@ -91,7 +92,8 @@ SubscriptionCache::SubscriptionCache()
 */
 SubscriptionCache::SubscriptionCache(std::string _dbPrefix)
 {
-  dbPrefix = _dbPrefix;
+  dbPrefix    = _dbPrefix;
+  mutexOwner  = 0;
 }
 
 
