@@ -33,7 +33,6 @@
 #include "mongoBackend/mongoUnsubscribeContext.h"
 #include "ngsi10/UnsubscribeContextRequest.h"
 #include "ngsi10/UnsubscribeContextResponse.h"
-#include "cache/subCache.h"
 
 
 
@@ -171,9 +170,8 @@ HttpStatusCode mongoUnsubscribeContext(UnsubscribeContextRequest* requestP, Unsu
     reqSemGive(__FUNCTION__, "ngsi10 unsubscribe request", reqSemTaken);
 
     //
-    // Removing subscription from cache
+    // FIXME P10: Remove subscription from cache
     //
-    subCache->remove(tenant, "", requestP->subscriptionId.get());
 
     return SccOk;
 }

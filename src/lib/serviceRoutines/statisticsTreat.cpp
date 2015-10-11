@@ -34,7 +34,6 @@
 #include "common/statistics.h"
 #include "common/sem.h"
 
-#include "cache/subCache.h"
 #include "ngsi/ParseData.h"
 #include "rest/ConnectionInfo.h"
 #include "serviceRoutines/statisticsTreat.h"
@@ -135,11 +134,6 @@ std::string statisticsTreat
     noOfStatisticsRequests                          = -1;
     noOfInvalidRequests                             = -1;
     noOfRegisterResponses                           = -1;
-
-    noOfSubCacheEntries                             = -1;
-    noOfSubCacheLookups                             = -1;
-    noOfSubCacheRemovals                            = -1;
-    noOfSubCacheRemovalFailures                     = -1;
 
     semTimeReqReset();
     semTimeTransReset();
@@ -419,26 +413,6 @@ std::string statisticsTreat
     out += TAG_ADD_COUNTER("discoveryErrors", noOfDiscoveryErrors);
   }
 
-  if (noOfSubCacheEntries != -1)
-  {
-    out += TAG_ADD_COUNTER("subCacheEntries", noOfSubCacheEntries);
-  }
-
-  if (noOfSubCacheLookups != -1)
-  {
-    out += TAG_ADD_COUNTER("subCacheLookups", noOfSubCacheLookups);
-  }
-
-  if (noOfSubCacheRemovals != -1)
-  {
-    out += TAG_ADD_COUNTER("subCacheRemovals", noOfSubCacheRemovals);
-  }
-
-  if (noOfSubCacheRemovalFailures != -1)
-  {
-    out += TAG_ADD_COUNTER("subCacheRemovalFailures", noOfSubCacheRemovalFailures);
-  }
-
   if (semTimeStatistics)
   {
     char requestSemaphoreWaitingTime[64];
@@ -456,10 +430,6 @@ std::string statisticsTreat
     char ccMutexWaitingTime[64];
     mutexTimeCCGet(ccMutexWaitingTime, sizeof(ccMutexWaitingTime));
     out += TAG_ADD_STRING("curlContextMutexWaitingTime", ccMutexWaitingTime);
-
-    char subCacheMutexWaitingTime[64];
-    subCacheMutexWaitingTimeGet(subCacheMutexWaitingTime, sizeof(subCacheMutexWaitingTime));
-    out += TAG_ADD_STRING("subCacheMutexWaitingTime", subCacheMutexWaitingTime);
   }
 
   int now = getCurrentTime();

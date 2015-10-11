@@ -54,9 +54,18 @@ using std::auto_ptr;
 
 
 /* ****************************************************************************
+*
+* noCache
+*/
+extern bool noCache;
+
+
+
+/* ****************************************************************************
 * Forward declarations
 */
 static void compoundValueBson(std::vector<orion::CompoundValueNode*> children, BSONObjBuilder& b);
+
 
 
 /* ****************************************************************************
@@ -1214,7 +1223,7 @@ static bool addTriggeredSubscriptions_withCache
   //
   std::vector<Subscription*> subVec;
 
-  subCache->lookup(tenant, servicePath, entityId, entityType, attr, &subVec);
+  // subCache->lookup(tenant, servicePath, entityId, entityType, attr, &subVec);
 
   int now = getCurrentTime();
   for (unsigned int ix = 0; ix < subVec.size(); ++ix)
@@ -1435,7 +1444,6 @@ static bool addTriggeredSubscriptions
   const std::vector<std::string>&           servicePathV
 )
 {
-  extern bool noCache;
   if (noCache)
   {
     return addTriggeredSubscriptions_noCache(entityId, entityType, attr, subs, err, tenant, servicePathV);

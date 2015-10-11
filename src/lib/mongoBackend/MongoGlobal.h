@@ -588,6 +588,6 @@ extern std::string dbDotDecode(std::string fromString);
 *
 * Lookup all subscriptions in the database and call a treat function for each
 */
-extern void subscriptionsTreat(std::string tenant, MongoTreatFunction treatFunction);
+extern void mongoSubCacheRefresh(char* dbPrefix);
 
 #endif

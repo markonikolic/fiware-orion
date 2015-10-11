@@ -2882,12 +2882,15 @@ std::string dbDotDecode(std::string s)
 
 /* ****************************************************************************
 *
-* subscriptionsTreat -
-*
-* Lookup all subscriptions in the database and call a treat function for each
+* mongoSubCacheRefresh -
 */
-void subscriptionsTreat(std::string database, MongoTreatFunction treatFunction)
+void mongoSubCacheRefresh(char* dbPrefix)
 {
+#if 0
+
+  This function will take care of refreshing the subscription cache ...
+
+
   BSONObj                   query;
   DBClientBase*             connection = getMongoConnection();
   auto_ptr<DBClientCursor>  cursor;
@@ -2930,4 +2933,5 @@ void subscriptionsTreat(std::string database, MongoTreatFunction treatFunction)
 
     treatFunction(tenant, sub);
   }
+#endif
 }

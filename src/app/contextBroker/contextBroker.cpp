@@ -186,8 +186,6 @@
 
 #include "contextBroker/version.h"
 #include "common/string.h"
-#include "cache/subCache.h"
-#include "cache/SubscriptionCache.h"
 
 
 
@@ -1187,13 +1185,6 @@ void orionExit(int code, const std::string& reason)
 */
 void exitFunc(void)
 {
-  if (subCache != NULL)
-  {
-    subCache->release();
-    delete subCache;
-    subCache = NULL;
-  }
-
   curl_context_cleanup();
   curl_global_cleanup();
 
@@ -1229,9 +1220,6 @@ static void contextBrokerInit(bool ngsi9Only, std::string dbPrefix, bool multite
 {
   /* Set notifier object (singleton) */
   setNotifier(new Notifier());
-
-  /* Create the subscription cache object */
-  subscriptionCacheInit(dbName);
 
   /* Launch threads corresponding to ONTIMEINTERVAL subscriptions in the database (unless ngsi9 only mode) */
   if (!ngsi9Only)
@@ -1606,7 +1594,7 @@ int main(int argC, char* argV[])
     if (subCacheInterval != 0)
     {
       sleep(subCacheInterval);
-      orion::subCache->refresh();
+      mongoSubCacheRefresh(dbName);
     }
     else
     {

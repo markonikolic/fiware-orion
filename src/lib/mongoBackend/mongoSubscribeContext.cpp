@@ -35,8 +35,6 @@
 #include "ngsi10/SubscribeContextResponse.h"
 #include "ngsi/StatusCode.h"
 #include "rest/uriParamNames.h"
-#include "cache/SubscriptionCache.h"
-#include "cache/subCache.h"
 
 
 
@@ -208,12 +206,12 @@ HttpStatusCode mongoSubscribeContext
       }
     }
 
-    // 3. Create Subscription for the cache
+    // FIXME P9: Create Subscription for the cache
     if (patternBased && onchange)
     {
-      std::string oidString = oid.toString();
+      // std::string oidString = oid.toString();
 
-      subCache->insert(new orion::Subscription(tenant, servicePath, requestP, oidString, expiration, notifyFormat));
+      // subCache->insert ...
     }
 
 

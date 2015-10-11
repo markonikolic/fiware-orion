@@ -60,11 +60,12 @@ PaArgument paArgs[] =
 *
 * global variables
 */
-bool  harakiri          = true;
-int   logFd             = -1;
-int   fwdPort           = -1;
-char  fwdHost[64];
-unsigned cprForwardLimit = 1000;
+bool          harakiri          = true;
+int           logFd             = -1;
+int           fwdPort           = -1;
+bool          noCache           = true;
+unsigned int  cprForwardLimit   = 1000;
+char          fwdHost[64];
 
 
 
@@ -99,13 +100,15 @@ int main(int argC, char** argV)
 
   if (argC > 1)
   {
-     if (strcmp(argV[1], "-t") == 0)
-       paParse(paArgs, 3, argV, 3, false);
-     else
-       paParse(paArgs, 1, argV, 1, false);
+    if (strcmp(argV[1], "-t") == 0)
+      paParse(paArgs, 3, argV, 3, false);
+    else
+      paParse(paArgs, 1, argV, 1, false);
   }
   else
+  {
     paParse(paArgs, 1, argV, 1, false);
+  }
 
   LM_M(("Init tests"));
   orionInit(exitFunction, orionUnitTestVersion, SemReadWriteOp, false);

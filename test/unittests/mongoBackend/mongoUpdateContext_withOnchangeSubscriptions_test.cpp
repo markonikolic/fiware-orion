@@ -34,8 +34,6 @@
 #include "ngsi/ContextElementResponse.h"
 #include "ngsi10/UpdateContextRequest.h"
 #include "ngsi10/UpdateContextResponse.h"
-#include "cache/SubscriptionCache.h"
-#include "cache/subCache.h"
 
 #include "mongo/client/dbclient.h"
 
@@ -123,8 +121,8 @@ extern void setMongoConnectionForUnitTest(DBClientBase*);
 * This function is called before every test, to populate some information in the
 * entities and csbus collections.
 */
-static void prepareDatabase(bool initializeCache = true) {
-
+static void prepareDatabase(bool initializeCache = true)
+{
   /* Set database */
   setupDatabase();
 
@@ -289,12 +287,6 @@ static void prepareDatabase(bool initializeCache = true) {
   connection->insert(SUBSCRIBECONTEXT_COLL, sub1);
   connection->insert(SUBSCRIBECONTEXT_COLL, sub2);
   connection->insert(SUBSCRIBECONTEXT_COLL, sub3);
-
-  /* Given that preparation including csubs, we have to init cache */
-  if (initializeCache == true)
-  {
-    subscriptionCacheInit("");
-  }
 }
 
 
@@ -374,8 +366,6 @@ static void prepareDatabaseWithNoTypeSubscriptions(void) {
     connection->insert(SUBSCRIBECONTEXT_COLL, sub4);
     connection->insert(SUBSCRIBECONTEXT_COLL, sub5);
 
-    /* Given that preparation including csubs, we have to init cache */
-    subscriptionCacheInit("");
 }
 
 /* ****************************************************************************

@@ -28,9 +28,6 @@
 #include "logMsg/traceLevels.h"
 
 #include "common/globals.h"
-#include "cache/subCache.h"
-#include "cache/SubscriptionCache.h"
-#include "cache/Subscription.h"
 #include "mongoBackend/MongoGlobal.h"
 #include "mongoBackend/mongoUpdateContextSubscription.h"
 #include "ngsi10/UpdateContextSubscriptionRequest.h"
@@ -272,32 +269,7 @@ HttpStatusCode mongoUpdateContextSubscription
 
   reqSemGive(__FUNCTION__, "ngsi10 update subscription request", reqSemTaken);
 
-
-  //
-  // Modification of the subscription cache
-  //
-  // The subscription before this updatye is stored in 'sub'.
-  // The updated subscription is stored in 'newSub'
-  // 
-  // All we need to do now for the cache is to:
-  //   1. Remove 'sub' from sub-cache (if present)
-  //   2. Create 'newSub' in sub-cache (if applicable)
-  //
-
-  // 0. Lookup matching subscription in subscription-cache
-  std::string servicePath;
-
-  servicePath = (servicePathV.size() == 0)? "" : servicePathV[0];
-  Subscription* subP = subCache->lookupById(tenant, servicePath, requestP->subscriptionId.get());
-
-  // 1. Remove 'sub' from sub-cache (if present)
-  if (subP)
-  {
-    subCache->remove(subP);
-  }
-
-  // 2. Create 'newSub' in sub-cache (if applicable)
-  subCache->insert(tenant, newSub.obj());  // The insert method takes care of making sure isPattern and ONCHANGE is there
+  // FIXME P8: Update the sub-cache
 
   return SccOk;
 }
