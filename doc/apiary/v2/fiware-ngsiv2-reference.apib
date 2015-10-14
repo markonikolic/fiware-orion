@@ -173,21 +173,97 @@ context broker, context registry, context consumer)
 
 ## JSON entity representation
 
-An entity is represented by a a JSON object which contain the following properties:
+Entities are represented in request and response payloads by a JSON object following this pattern:
 
-* `id` for the entity ID, represented by a JSON string. If the entity has an `id` attribute itself it will be ignored.
-* `type` for the entity type, represented by a JSON string. If the entity has a `type` attribute itself it will be ignored.
-  If the entity doesn't have a type, then this property is not included.
-* A collection of properties, one per entity attribute. Properties representing attributes with no metadata
-  or type are rendered as regular JSON values. Properties representing attributes which specify a type or include
-  metadata are rendered as JSON objects with the following properties:
-  * `value`: for the attribute value, rendered as a regular JSON value (string, number or boolean), object or array.
-  * `type`: a JSON string which represents the user-defined NGSI attribute type.
-  * A collection of properties one per metadata field associated to the attribute value. Metadata properties follow
-    the same representation rules that applies to properties which represent attributes (except that a metadata
-    cannot have metadata properties).
+```
+{
+  "id": "entityID",
+  "type": "entityType",
+  "attr_1": <val_1>,
+  "attr_2": <val_2>,
+  ...
+  "attr_N": <val_N>
+}
+```
 
-### Special attribute types
+`id` and `type` are forbidden in some operations (basically in entity update operations, given that entity ID and
+type are part of the entity resource identity so they are not mutable, see details in individual operations
+descriptions). When not forbidden, `id` is mandatory and `type` is optional (absent `type` means that the
+type is null).
+
+Each `attr_i` represents an entity attribute (which name is `attr_i`). There are two alternative formats
+for `<val_i>`, depending on whether the `keyValues` option is enabled or not:
+
+* If `keyValues` is enabled: `<val_i>` is the value of the attribute. In this case, attribute type or metadata
+  are not provided/shown.
+* If `keyValues` is not enabled: `<val_i>` is a JSON object which contains the following properties:
+  * `value`: for the attribute value, rendered as a regular JSON value (string, number, boolean or null), object or array.
+    This property is optional in requests, meaning that the attribute has `null` value. It is always present in responses.
+  * `type`: a JSON string which represents the user-defined NGSI attribute type. This property is optional in requests
+    meaning that the attribute doesn't have a NGSI type. In responses, this property is set to `null` if the attribute
+    doesn't have a type.
+  * `metadata`: a JSON object which represents attribute metadata. This property is optional in requests, meaning that the
+    attribute doesn't have metadata. In responses, this property is set to `{}` if the attribute doesn't have metadata.
+    Each property in this object represents a metadata element (which name is the name of the property) which value is
+    a JSON object composed of two properties: `value` and `type` (`value` and `type` following the same rules that the
+    ones described in the previous two bullets).
+
+## JSON attribute representation
+
+Attributes are represented in request and response payloads by a JSON object following this pattern:
+
+```
+{
+  "value": <...>,
+  "type": <...>,
+  "metadata": <...>
+}
+```
+
+where:
+
+* `value`: represents the attribute value, rendered as a regular JSON value (string, number, boolean or null), object or array.
+  This property is optional in requests, meaning that the attribute has `null` value. It is always present in responses.
+* `type`: a JSON string which represents the user-defined NGSI attribute type. This property optional in requests
+  meaning that the attribute doesn't have a NGSI type. In responses, this property is set to `null` if the attribute doesn't have
+  a type.
+* `metadata`: a JSON object which represents attribute metadata. This property is optional in requests, meaning that the
+  attribute doesn't have metadata. In responses, this property is set to `{}` if the attribute doesn't have metadata.
+  Each property in this object represents a metadata element (which name is the name of the property) which value is
+  a JSON object composed of two properties: `value` and `type` (`value` and `type` following the same rules that the
+  ones described in the previous two bullets).
+
+## Direct access to attribute value
+
+Some operations in the NGSIv2 API allow getting/setting directly the attribute value, both in JSON and plain text formats.
+
+In the case of setting value:
+
+* If request payload MIME type is `application/json`, then the value of the attribute is set to the JSON object or array
+  coded in the payload (if the payload is not a valid JSON document, then an error is returned).
+* If request payload MIME type is `text/plain`, then the following algorithm is applied to the payload:
+  * If the payload starts and ends with citation-marks (`"`), the value is taken as a string (citation marks themselves are not
+    considered part of the string)
+  * If true/false/True/False/TRUE/FALSE, the value is taken as a boolean.
+  * If null/Null/NULL, the value is taken as null.
+  * If these first three tests 'fails', the text is interpreted as a number.
+  * If not a number, then an error is returned and the attribute's value is unchanged.
+
+In the case of getting value:
+
+* If response payload MIME type is `application/json`:
+  * If attribute value is a JSON object or array, the payload in that JSON object or array
+  * If attribute value is a string, number, null or boolean, a HTTP error "406 Not Acceptable: accepted MIME types:
+    text/plain" is returned.
+* If response payload MIME type is `text/plain`,
+  * If attribute value is a JSON object or array, the payload in an string-fication of that JSON object or array.
+  * If attribute value is a string, number, null or boolean, the payload is a text representation of that value. In the case
+    of an string, citation marks are used at the begining and end.
+
+The payload MIME type in request is specified in the `Content-Type` HTTP header. The payload MIME type in responses is
+based on client-server HTTP negotiation, based on client `Accept` header.
+
+## Special attribute types
 
 Generally speaking, user-defined attribute types are informative, they are processed by the NGSIv2 server in
 an opaque way. Nonetheless, the types described below are used to convey an special meaning
